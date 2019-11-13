@@ -15,18 +15,58 @@ from sklearn.feature_selection.base import SelectorMixin
 import bottleneck as bn
 from . import mico_utils
 #from sklearn.feature_selection import VarianceThreshold
-from scipy import sparse
+from scipy import sparse, stats
 import copy
 from abc import ABCMeta, abstractmethod
+from colinpy import *
 
 
-"""
-Methods for calculating Mutual Information in an embarrassingly parallel way.
+###############################################################################
+# IO                                                                          #
+###############################################################################
+import errno, os, logging
 
-Author: Daniel Homola <dani.homola@gmail.com>
-License: BSD 3 clause
-"""
 
+def setup_logging(level, filename=None):
+    logging.basicConfig(filename=filename, format='%(message)s', level=level)
+    # logging.basicConfig(filename=filename, format='[%(asctime)s] %(message)s', datefmt='%Y-%m-%d %I:%M:%S %p', level=level)
+
+
+def append_message(full_msg, curr_msg, check=True, new_line=True):
+    if check:
+        return (full_msg + (curr_msg + "\n" if new_line else curr_msg)) if curr_msg not in full_msg else full_msg
+    else:
+        return full_msg + (curr_msg + "\n" if new_line else curr_msg)
+
+
+def make_dir(path):
+    """Private function for creating the output directory.
+    @ref https://stackoverflow.com/questions/20666764/python-logging-how-to-ensure-logfile-directory-is-created
+    """
+    try:
+        os.makedirs(path, exist_ok=True)  # Python>3.2
+    except TypeError:
+        try:
+            os.makedirs(path)
+        except OSError as exc:  # Python >2.5
+            if exc.errno == errno.EEXIST and os.path.isdir(path):
+                pass
+            else:
+                raise FileNotFoundError("Failed to make directory")
+
+
+###############################################################################
+# Time stamp                                                                  #
+###############################################################################
+from time import gmtime, strftime
+
+def get_time_stamp():
+    return strftime("%Y-%m-%d-%H-%M-%S", gmtime())
+
+
+###############################################################################
+# MI.                                                                         #
+###############################################################################
 import numpy as np
 from scipy.special import gamma, psi
 from sklearn.neighbors import NearestNeighbors
@@ -74,6 +114,7 @@ def _get_first_mi(i, k, MI_FS, are_data_binned, use_nan_for_invalid_mi=True):
     n, p = MI_FS.X.shape
     x = MI_FS.X[:, i].reshape(n, 1)
     y = MI_FS.y.reshape(n, 1)
+    #y = MI_FS.y.flatten().reshape(n, 1)
 
     if are_data_binned:
         if MI_FS.categorical:
@@ -118,12 +159,9 @@ def _get_mi(f, s, k, MI_FS, are_data_binned, use_nan_for_invalid_mi=True):
         # JMI & JMIM
         if s != f:
             # Off-diagonal.
-            y = MI_FS.y.flatten().reshape(n, 1)
+            y = MI_FS.y.reshape(n, 1)
+            #y = MI_FS.y.flatten().reshape(n, 1)
             joint = MI_FS.X[:, (s, f)]
-            #print(joint)
-            #print("joint.shape", joint.shape)
-            #print("y.shape", y.shape)
-
             if are_data_binned:
                 # Encoding.
                 joint = mico_utils.encode_discrete_x(joint).reshape(n, 1)
@@ -133,18 +171,14 @@ def _get_mi(f, s, k, MI_FS, are_data_binned, use_nan_for_invalid_mi=True):
                     MI = mico_utils.get_mutual_information_cd(y, joint, k)
             else:
                 if MI_FS.categorical:
-                    #print("HERE")
-                    #print("joint.shape", joint.shape)
-                    #print("y", y)
                     MI = mico_utils.get_mutual_information_cd(joint, y, k)
                 else:
-                    #print("HERE 2")
                     MI = mico_utils.get_mutual_information_cc(joint, y, k)
         else:
             # Diagonal.
-            x = MI_FS.y.flatten().reshape(n, 1)
+            x = MI_FS.X[:, f].reshape(n, 1)
             y = MI_FS.y.reshape(n, 1)
-
+            #y = MI_FS.y.flatten().reshape(n)
             if are_data_binned:
                 if MI_FS.categorical:
                     MI = mico_utils.get_mutual_information_dd(x, y)
@@ -168,7 +202,8 @@ def _get_mi(f, s, k, MI_FS, are_data_binned, use_nan_for_invalid_mi=True):
         else:
             # Diagonal-- Did use information from y here.
             x = MI_FS.X[:, f].reshape(n, 1)
-            y = MI_FS.y.flatten().reshape(n)
+            y = MI_FS.y.reshape(n, 1)
+            #y = MI_FS.y.flatten().reshape(n)
             if are_data_binned:
                 if MI_FS.categorical:
                     MI = mico_utils.get_mutual_information_dd(x, y)
@@ -208,40 +243,37 @@ def _get_mico(f, s, k, MI_FS, offdiagonal_param, are_data_binned, use_nan_for_in
     :return:
     """
     n, p = MI_FS.X.shape
+    clean_up = True
 
     if MI_FS.method in ['JMI', 'JMIM']:
         # JMI & JMIM
         if s != f:
             # Off-diagonal -- -1/2(P-1) I(X_{.s}; X_{.k}; y).
-            x1 = MI_FS.y.flatten().reshape(n, 1)
-            x2 = MI_FS.X[:, f].reshape(n, 1)
-            y = MI_FS.y.reshape(n)
-            print("x1.shape", x1.shape)
-            print("x2.shape", x2.shape)
-            print("y.shape", y.shape)
+            x1 = MI_FS.X[:, f].reshape(n, 1)
+            x2 = MI_FS.X[:, s].reshape(n, 1)
+            y = MI_FS.y.reshape(n, 1)
+            clean_up = False
             if are_data_binned:
                 if MI_FS.categorical:
-                    print("1")
                     MI = mico_utils.get_interaction_information_3way(x1, x2, y, "ddd", k) * offdiagonal_param
                 else:
-                    print("2")
-                    MI = mico_utils.get_interaction_information_3way(x1, x2, y, "ccd", k) * offdiagonal_param
+                    MI = mico_utils.get_interaction_information_3way(x1, x2, y, "ddc", k) * offdiagonal_param
             else:
                 if MI_FS.categorical:
-                    print("3")
-                    MI = mico_utils.get_interaction_information_3way(x1, x2, y, "ddd", k) * offdiagonal_param
+                    MI = mico_utils.get_interaction_information_3way(x1, x2, y, "ccd", k) * offdiagonal_param
                 else:
-                    print("4")
-                    MI = mico_utils.get_interaction_information_3way(x1, x2, y, "ddc", k) * offdiagonal_param
+                    MI = mico_utils.get_interaction_information_3way(x1, x2, y, "ccc", k) * offdiagonal_param
         else:
             # Diagonal -- I(X_{.s}; y).
-            x = MI_FS.y.flatten().reshape(n, 1)
-            y = MI_FS.y.reshape(n)
+            x = MI_FS.X[:, f].reshape(n, 1)
+            y = MI_FS.y.reshape(n, 1)
+            #y = MI_FS.y.flatten().reshape(n)
             if are_data_binned:
                 if MI_FS.categorical:
                     MI = mico_utils.get_mutual_information_dd(x, y)
                 else:
-                    MI = mico_utils.get_mutual_information_cd(y.reshape(n, 1), x.reshape(n), k)
+                    MI = mico_utils.get_mutual_information_cd(y, x, k)
+                    #MI = mico_utils.get_mutual_information_cd(y.reshape(n, 1), x.reshape(n), k)
             else:
                 if MI_FS.categorical:
                     MI = mico_utils.get_mutual_information_cd(x, y, k)
@@ -251,21 +283,23 @@ def _get_mico(f, s, k, MI_FS, offdiagonal_param, are_data_binned, use_nan_for_in
         # MRMR
         if s != f:
             # Off-diagonal -- Did not use any information  from y here.
-            x1 = MI_FS.y.flatten().reshape(n, 1)
-            x2 = MI_FS.X[:, f].reshape(n, 1)
+            x1 = MI_FS.X[:, f].reshape(n, 1)
+            x2 = MI_FS.X[:, s].reshape(n, 1)
             if are_data_binned:
                 MI = mico_utils.get_mutual_information_dd(x1, x2) * offdiagonal_param
             else:
                 MI = mico_utils.get_mutual_information_cc(x1, x2, k) * offdiagonal_param
         else:
             # Diagonal -- Did use information from y here.
-            x = MI_FS.y.flatten().reshape(n, 1)
-            y = MI_FS.y.reshape(n)
+            x = MI_FS.X[:, f].reshape(n, 1)
+            y = MI_FS.y.reshape(n, 1)
+            #y = MI_FS.y.flatten().reshape(n)
             if are_data_binned:
                 if MI_FS.categorical:
                     MI = mico_utils.get_mutual_information_dd(x, y)
                 else:
-                    MI = mico_utils.get_mutual_information_cd(y.reshape(n, 1), x.reshape(n), k)
+                    MI = mico_utils.get_mutual_information_cd(y, x, k)
+                    #MI = mico_utils.get_mutual_information_cd(y.reshape(n, 1), x.reshape(n), k)
             else:
                 if MI_FS.categorical:
                     MI = mico_utils.get_mutual_information_cd(x, y, k)
@@ -273,9 +307,11 @@ def _get_mico(f, s, k, MI_FS, offdiagonal_param, are_data_binned, use_nan_for_in
                     MI = mico_utils.get_mutual_information_cc(x, y, k)
 
     # MI must be non-negative
-    MI = _clean_up_MI(MI, use_nan_for_invalid_mi)
-    if s == f:
-        MI = max(1.E-4, MI)
+    if clean_up:
+        MI = _clean_up_MI(MI, use_nan_for_invalid_mi)
+        if s == f:
+            MI = max(1.E-4, MI)
+
     return MI
 
 
@@ -394,7 +430,7 @@ class MutualInformationBase(BaseEstimator, SelectorMixin, metaclass=ABCMeta):
                  k=5,
                  n_features='auto',
                  categorical=True,
-                 n_jobs=1,
+                 n_jobs=0,
                  verbose=0,
                  scale_data=True,
                  num_bins=0,
@@ -410,13 +446,28 @@ class MutualInformationBase(BaseEstimator, SelectorMixin, metaclass=ABCMeta):
         self._support_mask = None
         self.early_stop_steps = early_stop_steps
         # Check if n_jobs is negative
-        if self.n_jobs < 0:
+        if self.n_jobs <= 0:
             self.n_jobs = cpu_count()
 
         # Attributes.
         self.n_features_ = 0
         self.ranking_ = []
         self.mi_ = []
+
+        # Logger.
+        make_dir("./log/")
+        instance = get_time_stamp()
+        filename = "./log/{}.log".format(instance)
+        #filename = None
+
+        if self.verbose == 0:
+            lv = logging.CRITICAL
+        elif self.verbose == 1:
+            lv = logging.INFO
+        else:
+            lv = logging.DEBUG
+        setup_logging(level=lv, filename=filename)
+
 
     def _get_support_mask(self):
         if self._support_mask is None:
@@ -654,7 +705,7 @@ class MutualInformationForwardSelection(MutualInformationBase):
                  k=5,
                  n_features='auto',
                  categorical=True,
-                 n_jobs=1,
+                 n_jobs=0,
                  verbose=0,
                  scale_data=True,
                  num_bins=0,
@@ -696,9 +747,9 @@ class MutualInformationForwardSelection(MutualInformationBase):
         feature_mi_matrix[:] = np.nan
         S_mi = []
 
-        # ---------------------------------------------------------------------
-        # FIND FIRST FEATURE
-        # ---------------------------------------------------------------------
+        #-------------------------------------------------------------------#
+        # FIND FIRST FEATURE                                                #
+        #-------------------------------------------------------------------#
         xy_MI = np.array(get_first_mi_vector(self, self.k, self._are_data_binned()))
         xy_MI = _replace_vec_nan_with_zero(xy_MI)
         print("xy_MI", xy_MI)
@@ -711,9 +762,9 @@ class MutualInformationForwardSelection(MutualInformationBase):
         if self.verbose > 0:
             self._print_results(S, S_mi)
 
-        # ---------------------------------------------------------------------
-        # FIND SUBSEQUENT FEATURES
-        # ---------------------------------------------------------------------
+        #-------------------------------------------------------------------#
+        # FIND SUBSEQUENT FEATURES                                          #
+        #-------------------------------------------------------------------#
         while len(S) < n_features:
             # loop through the remaining unselected features and calculate MI
             s = len(S) - 1
@@ -756,9 +807,9 @@ class MutualInformationForwardSelection(MutualInformationBase):
                 if np.abs(np.mean(MI_dd[-5:])) < 1e-3:
                     break
 
-        # ---------------------------------------------------------------------
-        # SAVE RESULTS
-        # ---------------------------------------------------------------------
+        #-------------------------------------------------------------------#
+        # SAVE RESULTS                                                      #
+        #-------------------------------------------------------------------#
         self.n_features_ = len(S)
         self._support_mask = np.zeros(p, dtype=np.bool)
         self._support_mask[S] = True
@@ -879,7 +930,7 @@ class MutualInformationBackwardSelection(MutualInformationBase):
                  k=5,
                  n_features='auto',
                  categorical=True,
-                 n_jobs=1,
+                 n_jobs=0,
                  verbose=0,
                  scale_data=True,
                  num_bins=0,
@@ -905,7 +956,7 @@ class MutualInformationBackwardSelection(MutualInformationBase):
         print("BGN")
         self.X, y = self._init_data(X, y)
         n, p = X.shape
-        self.y = y.reshape((n, 1))
+        self.y = y.reshape(n, 1)
 
         # list of selected features
         S = list(range(p))
@@ -921,9 +972,9 @@ class MutualInformationBackwardSelection(MutualInformationBase):
         feature_mi_matrix[:] = np.nan
         S_mi = []
 
-        # ---------------------------------------------------------------------
-        # CALCULATE FULL MIs
-        # ---------------------------------------------------------------------
+        #-------------------------------------------------------------------#
+        # CALCULATE FULL MIs                                                #
+        #-------------------------------------------------------------------#
         if self.method == 'MRMR':
             xy_MI = np.array(get_first_mi_vector(self, self.k, self._are_data_binned()))
             xy_MI = _replace_vec_nan_with_zero(xy_MI)
@@ -935,9 +986,9 @@ class MutualInformationBackwardSelection(MutualInformationBase):
         feature_mi_matrix = mico_utils.make_mat_sym(feature_mi_matrix)
         print(feature_mi_matrix)
 
-        # ---------------------------------------------------------------------
-        # FIND SUBSEQUENT FEATURES
-        # ---------------------------------------------------------------------
+        #-------------------------------------------------------------------#
+        # FIND SUBSEQUENT FEATURES                                          #
+        #-------------------------------------------------------------------#
         while len(S) >= n_features:
             fmm = np.zeros((len(S) - 1, len(S)))
 
@@ -993,9 +1044,9 @@ class MutualInformationBackwardSelection(MutualInformationBase):
                     print("Early stop.")
                     break
 
-        # ---------------------------------------------------------------------
-        # SAVE RESULTS
-        # ---------------------------------------------------------------------
+        #-------------------------------------------------------------------#
+        # SAVE RESULTS                                                      #
+        #-------------------------------------------------------------------#
         self.n_features_ = len(S)
         self._support_mask = np.zeros(p, dtype=np.bool)
         self._support_mask[S] = True
@@ -1119,14 +1170,16 @@ class MutualInformationConicOptimization(MutualInformationBase):
                  k=5,
                  n_features='auto',
                  categorical=True,
-                 n_jobs=1,
+                 n_jobs=0,
                  verbose=0,
                  scale_data=True,
-                 num_bins=0):
+                 num_bins=0,
+                 random_state=0):
         # Call base constructor.
         super(MutualInformationConicOptimization, self).__init__(
             method, k, n_features, categorical,
             n_jobs, verbose, scale_data, num_bins)
+        self.random_state = random_state
 
     def fit(self, X, y):
         """
@@ -1145,112 +1198,247 @@ class MutualInformationConicOptimization(MutualInformationBase):
         # Initialize the parameters.                                        #
         #-------------------------------------------------------------------#
         self.X, y = self._init_data(X, y)
-        n, p = X.shape
-        self.y = y.reshape((n, 1))
+        n, num_features = X.shape
+        self.y = y.reshape(n, 1)
 
-        # list of selected features
-        S = list(range(p))
+        # list of features
+        S = list(range(num_features))
 
         #-------------------------------------------------------------------#
         # Create the MI matrix.                                             #
         #-------------------------------------------------------------------#
-        if self.n_features != 'auto':
-            feature_mi_matrix = np.zeros((self.n_features, p))
-        else:
-            feature_mi_matrix = np.zeros((n, p))
-        feature_mi_matrix[:] = 0.0
+        # Notation:
+        # - N : num_features
+        # - P : num_features_sel
+        Q = np.zeros((num_features, num_features))
+        Q[:] = 0.0
 
-        # Calculate max features
+        # Calculate number of the selected features and the parameter.
         if self.n_features == 'auto':
-            n_features = p
+            num_features_sel = num_features
         else:
-            n_features = min(p, self.n_features)
-        offdiagonal_param = -0.5 / (n_features - 1)
+            num_features_sel = min(num_features, self.n_features)
+        offdiagonal_param = -0.5 / (num_features_sel - 1)
+        print("=" * 80)
+        print("num_features_sel", num_features_sel)
+        print("num_features", num_features)
         print("offdiagonal_param", offdiagonal_param)
         print("S", S)
-        print("self._are_data_binned())", self._are_data_binned())
-        for s in S:
-            feature_mi_matrix[s, S] = get_mico_vector(self, self.k, S, s, offdiagonal_param, self._are_data_binned())
+
+        # Calculate the MI matrix.
+        for i, s in enumerate(S):
+            S2 = list(range(i, num_features, 1))
+            Q[s, S2] = get_mico_vector(self, self.k, S2, s, offdiagonal_param, self._are_data_binned())
 
         # Ensure the MI matrix is symmetric.
-        feature_mi_matrix = mico_utils.make_mat_sym(feature_mi_matrix)
-        print(feature_mi_matrix)
+        for i in range(num_features):
+            for j in range(i + 1, num_features):
+                Q[j, i] = Q[i, j]
+        #feature_mi_matrix = mico_utils.make_mat_sym(feature_mi_matrix)
 
-        raise ValueError("STOP")
+        print(Q)
 
+        # Calculate Q^T e.
+        QTe = np.zeros(num_features)
+        for s in S:
+            QTe[s] = Q[s, :].sum()
+            assert(QTe[s] == Q[:, s].sum())
 
-        # ---------------------------------------------------------------------
-        # FIND FIRST FEATURE
-        # ---------------------------------------------------------------------
+        # Create Q^u matrix.
+        # The first row/column is the auxiliary variable.
+        Qu = np.zeros((num_features + 1, num_features + 1))
+        Qu[0, 0] = 0.0
+        Qu[1:(num_features + 1), 1:(num_features + 1)] = Q
+        Qu[0, 1:(num_features + 1)] = QTe
+        Qu[1:(num_features + 1), 0] = QTe
 
+        print("=" * 80)
+        print(Qu)
 
+        #-------------------------------------------------------------------#
+        # Input optimization model.                                         #
+        #                                                                   #
+        # See                                                               #
+        #   A Semidefinite Programming Based Search Strategy for Feature    #
+        #   Selection with Mutual Information Measure, Eq (26)              #
+        #-------------------------------------------------------------------#
+        def map_ij_to_k(i, j, size):
+            return i * size + j
 
-        # ---------------------------------------------------------------------
-        # FIND FIRST FEATURE
-        # ---------------------------------------------------------------------
-        xy_MI = np.array(get_first_mi_vector(self, self.k, self._are_data_binned()))
+        def map_k_to_ij(k, size):
+            return int(k/size), int(k%size)
 
-        # choose the best, add it to S, remove it from F
-        S, F = self._add_remove(S, F, bn.nanargmax(xy_MI))
-        S_mi.append(bn.nanmax(xy_MI))
+        # Cone information.
+        semidefinite_cone = list(range((num_features + 1) * (num_features + 1)))
+        #print("semidefinite_cone", semidefinite_cone)
 
-        # notify user
-        if self.verbose > 0:
-            self._print_results(S, S_mi)
+        # Constraint 1.
+        row1_idx = []
+        row1_val = []
+        for i in range(1, num_features + 1):
+            for j in range(1, num_features + 1):
+                row1_idx += [map_ij_to_k(i, j, num_features + 1)]
+                row1_val += [1.0]
+        row1_rhs = (2.0 * num_features_sel - num_features) ** 2
+        #print("row1_idx", row1_idx)
+        #print("row1_val", row1_val)
+        #print("row1_rhs", row1_rhs)
 
-        # ---------------------------------------------------------------------
-        # FIND SUBSEQUENT FEATURES
-        # ---------------------------------------------------------------------
-        if self.n_features == 'auto':
-            n_features = np.inf
+        # Constraint 2.
+        row2_idx = []
+        row2_val = []
+        for i in range(1, num_features + 1):
+            row2_idx += [map_ij_to_k(0, i, num_features + 1)]
+            row2_val += [1.0]
+        for i in range(1, num_features + 1):
+            row2_idx += [map_ij_to_k(i, 0, num_features + 1)]
+            row2_val += [1.0]
+        row2_rhs = 2.0 * (2.0 * num_features_sel - num_features)
+        #print("row2_idx", row2_idx)
+        #print("row2_val", row2_val)
+        #print("row2_rhs", row2_rhs)
+
+        # Model.
+        CLN_INFINITY = ClnModel.get_infinity()
+        model = ClnModel()
+
+        try:
+            # Step 1. Create a model and change the parameters.
+            # Create an empty model.
+            model.create_mdl()
+
+            # Set parameters.
+            model.set_ipa("Model/Verbose", 3 if self.verbose >= 2 else self.verbose)
+            #model.set_ipa("Model/Presolver/PresolveLv", 1)
+            model.set_ipa("Ips/Solver/NumThreads", self.n_jobs)
+            model.set_ipa("Ips/Solver/Type", 2)
+
+            # Step 2. Input model.
+            # Change to maximization problem.
+            model.set_max_obj_sense()
+
+            # Add variables.
+            # One semidefinite block.
+            for i in range(0, num_features + 1):
+                for j in range(0, num_features + 1):
+                    model.add_col(-CLN_INFINITY, CLN_INFINITY, Qu[i, j], [], [])
+
+            # Add constraints.
+            # - Cnstraint 1:
+            #   \sum_{i,j}^N Y_{ij} = (2P - N)^2.
+            model.add_row(row1_rhs, row1_rhs, row1_idx, row1_val)
+
+            # - Constraint 2:
+            #   \sum_{i}^N Y_{i0} + \sum_{i}^N Y_{0i} = 2 * (2P - N).
+            model.add_row(row2_rhs, row2_rhs, row2_idx, row2_val)
+
+            # - Constraint 3:
+            #   diag(Y) = e.
+            for i in range(0, num_features + 1):
+                model.add_row(1.0, 1.0, [map_ij_to_k(i, i, num_features + 1)], [1.0])
+
+            # - Add semidefinite conic constraint.
+            model.add_semi_definite_cone(semidefinite_cone)
+
+            # Step 3. Solve the problem and populate the result.
+            # Solve the problem.
+            model.solve_prob()
+
+        except ClnError as e:
+            logging.error("Received Colin exception.")
+            logging.error(" - Explanation   : {}".format(e.message))
+            logging.error(" - Code          : {}".format(e.code))
+        except Exception as e:
+            logging.error("Received exception.")
+            logging.error(" - Explanation   : {}".format(e))
+        finally:
+            # Step 4. Display the result and free the model.
+            if self.verbose >= 1:
+                model.display_results()
+
+            # Retrieve result code, optimization status, and solution status.
+            result = int(model.get_solver_result())
+            opt_status = model.get_solver_opt_status()
+            sol_status = model.get_solver_sol_status()
+            has_solution = model.has_solution()
+
+            # Note: Non-optimal status (ENM_OPT_STATUS_OPTIMAL).
+            make_dir("./log/")
+            if opt_status != 1:
+                if has_solution:
+                    # TODO Support SDP in LP/MPS output.
+                    # Can continue.
+                    logging.warning("Colin failed to solve the problem to optimality, but at least a primal solution is available.")
+                    instance = get_time_stamp()
+                    filename = "./log/warn_code_{0}_time_{1}.lp".format(opt_status, instance)
+                    #model.write_prob(filename)
+                else:
+                    # Cannot continue.
+                    instance = get_time_stamp()
+                    filename = "./log/err_code_{0}_time_{1}.lp".format(opt_status, instance)
+                    #model.write_prob(filename)
+
+                    msg = "Colin failed to solve the problem to optimality. Terminated."
+                    logging.error(msg)
+                    raise ValueError(msg)
+
+                logging.info(" - Result        : {0} ({1})".format(model.explain_result(result), result))
+                logging.info(" - Opt status    : {0} ({1})".format(model.explain_opt_status(opt_status), opt_status))
+                logging.info(" - Sol status    : {0} ({1})".format(model.explain_sol_status(sol_status), sol_status))
+                logging.info(" - Has solution  : {0}".format(has_solution))
+            else:
+                logging.info("Colin solved the problem to optimality.")
+
+            if has_solution:
+                prim_soln = model.get_prim_soln()
+
+            model.free_mdl()
+
+        # Create covariance matrix.
+        mean_vec = np.zeros(num_features)
+        cov_mat = []
+        ref_pt = prim_soln[0]
+        print("ref_pt", ref_pt)
+        for i in range(1, num_features + 1):
+            for j in range(1, num_features + 1):
+                cov_mat.append(prim_soln[map_ij_to_k(i, j, num_features + 1)])
+        #cov_mat = list(map(lambda x : round(x, 4), cov_mat))
+        #print(cov_mat)
+
+        # Debug.
+        print("(2P - N)^2 = ", (2 * num_features_sel - num_features) ** 2)
+        s = 0
+        for k in range(0, num_features * num_features):
+            s += cov_mat[k]
+        print('sum_1^N Y_ij= ', s)
+
+        # Perturbation.
+        for k in range(0, num_features * num_features):
+            i, j = map_k_to_ij(k, num_features)
+            if i == j:
+                # Add eps to diagonal.
+                cov_mat[k] += 1.E-4
+
+        cov_mat = np.matrix(cov_mat).reshape(num_features, num_features)
+        #print("cov_mat", cov_mat)
+
+        pdf = stats.multivariate_normal(mean_vec, cov_mat)
+        sampled_pt = pdf.rvs(1, random_state=self.random_state)
+        if ref_pt >= 0:
+            S = [ i for i, e in enumerate(sampled_pt) if e >= 0]
         else:
-            n_features = self.n_features
+            S = [ i for i, e in enumerate(sampled_pt) if e <= 0]
+        #print("S: ", S)
 
-        while len(S) < n_features:
-            # loop through the remaining unselected features and calculate MI
-            s = len(S) - 1
-            feature_mi_matrix[s, F] = get_mi_vector(self, self.k, F, S[-1], self._are_data_binned())
+        #print(cov_mat.reshape(len(sampled_pt)))
 
-            # make decision based on the chosen FS algorithm
-            fmm = feature_mi_matrix[:len(S), F]
-            if self.method == 'JMI':
-                selected = F[bn.nanargmax(bn.nansum(fmm, axis=0))]
-            elif self.method == 'JMIM':
-                if bn.allnan(bn.nanmin(fmm, axis=0)):
-                    break
-                selected = F[bn.nanargmax(bn.nanmin(fmm, axis=0))]
-            elif self.method == 'MRMR':
-                if bn.allnan(bn.nanmean(fmm, axis=0)):
-                    break
-                MRMR = xy_MI[F] - bn.nanmean(fmm, axis=0)
-                selected = F[bn.nanargmax(MRMR)]
-                S_mi.append(bn.nanmax(MRMR))
-
-            # record the JMIM of the newly selected feature and add it to S
-            if self.method != 'MRMR':
-                S_mi.append(bn.nanmax(bn.nanmin(fmm, axis=0)))
-            S, F = self._add_remove(S, F, selected)
-
-            # notify user
-            if self.verbose > 0:
-                self._print_results(S, S_mi)
-
-            # if n_features == 'auto', let's check the S_mi to stop
-            if self.n_features == 'auto' and len(S) > 10:
-                # smooth the 1st derivative of the MI values of previously sel
-                MI_dd = signal.savgol_filter(S_mi[1:], 9, 2, 1)
-                # does the mean of the last 5 converge to 0?
-                if np.abs(np.mean(MI_dd[-5:])) < 1e-3:
-                    break
-
-        # ---------------------------------------------------------------------
-        # SAVE RESULTS
-        # ---------------------------------------------------------------------
-
+        #-------------------------------------------------------------------#
+        # SAVE RESULTS                                                      #
+        #-------------------------------------------------------------------#
         self.n_features_ = len(S)
-        self._support_mask = np.zeros(p, dtype=np.bool)
+        self._support_mask = np.zeros(num_features, dtype=np.bool)
         self._support_mask[S] = True
         self.ranking_ = S
-        self.mi_ = S_mi
+        self.mi_ = []
 
         return self
