@@ -197,8 +197,8 @@ def test_mifs():
     r = int(.05 * f)  # Proportion of the redundant features
     c = 2
 
-    method = 'JMI'
-    num_bins = 2
+    method = 'JMIM'
+    num_bins = 0
     scale_data = True
     k = max(1, int(f * 0.25))
     verbose = 2
@@ -221,7 +221,7 @@ def test_mifs():
 
     # perform feature selection
     mico = MutualInformationForwardSelection(
-        method=method, verbose=verbose, k=k, categorical=True, num_bins=num_bins, scale_data=scale_data, early_stop_steps=early_stop_steps)
+        method=method, verbose=verbose, k=k, categorical=True, num_bins=num_bins, scale_data=scale_data, n_jobs=1, early_stop_steps=early_stop_steps)
     mico.fit(X, y)
     # calculate precision and sensitivity
     sens, prec = check_selection(np.where(mico.get_support())[0], i, r)
@@ -234,7 +234,7 @@ def test_mifs():
                            random_state=0, shuffle=False)
     # perform feature selection
     mico = MutualInformationForwardSelection(
-        method=method, verbose=verbose, k=k, categorical=False, num_bins=num_bins, scale_data=scale_data, early_stop_steps=early_stop_steps)
+        method=method, verbose=verbose, k=k, categorical=False, num_bins=num_bins, scale_data=scale_data, n_jobs=1, early_stop_steps=early_stop_steps)
     mico.fit(X, y)
     # calculate precision and sensitivity
     sens, prec = check_selection(np.where(mico.get_support())[0], i, r)
@@ -273,7 +273,7 @@ def test_mibs():
 
     # perform feature selection
     mico = MutualInformationBackwardSelection(
-        method=method, verbose=verbose, k=k, categorical=True, num_bins=num_bins, scale_data=scale_data, early_stop_steps=early_stop_steps)
+        method=method, verbose=verbose, k=k, categorical=True, num_bins=num_bins, scale_data=scale_data, n_jobs=1, early_stop_steps=early_stop_steps)
     mico.fit(X, y)
     # calculate precision and sensitivity
     sens, prec = check_selection(np.where(mico.get_support())[0], i, r)
@@ -285,7 +285,7 @@ def test_mibs():
                            random_state=0, shuffle=False)
     # perform feature selection
     mico = MutualInformationBackwardSelection(
-        method=method, verbose=verbose, k=k, categorical=False, num_bins=num_bins, scale_data=scale_data, early_stop_steps=early_stop_steps)
+        method=method, verbose=verbose, k=k, categorical=False, num_bins=num_bins, scale_data=scale_data, n_jobs=1, early_stop_steps=early_stop_steps)
     mico.fit(X, y)
     # calculate precision and sensitivity
     sens, prec = check_selection(np.where(mico.get_support())[0], i, r)
@@ -300,12 +300,12 @@ def test_mico():
     r = int(.05 * f)  # Proportion of the redundant features
     c = 2# Classes
 
-    method = 'JMI'
+    method = 'JMIM'
     num_bins = 0
     scale_data = True
     k = max(1, int(f * 0.25))
     verbose = 2
-    n_features = int(f * 0.2)
+    n_features = int(f * 0.25)
     #n_features = 8#int(f / 2)
 
     print("Parameters.")
@@ -338,7 +338,7 @@ def test_mico():
                            random_state=0, shuffle=False)
     # perform feature selection
     mico = MutualInformationConicOptimization(
-        method=method, verbose=verbose, k=k, categorical=False, n_jobs=1, num_bins=num_bins, scale_data=scale_data, n_features=n_features)
+        method=method, verbose=verbose, k=k, categorical=False, num_bins=num_bins, scale_data=scale_data, n_jobs=1, n_features=n_features)
     mico.fit(X, y)
     # calculate precision and sensitivity
     sens, prec = check_selection(np.where(mico.get_support())[0], i, r)

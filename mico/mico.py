@@ -246,39 +246,76 @@ def _get_mico(f, s, k, MI_FS, offdiagonal_param, are_data_binned, use_nan_for_in
     clean_up = True
 
     if MI_FS.method in ['JMI', 'JMIM']:
-        # JMI & JMIM
-        if s != f:
-            # Off-diagonal -- -1/2(P-1) I(X_{.s}; X_{.k}; y).
-            x1 = MI_FS.X[:, f].reshape(n, 1)
-            x2 = MI_FS.X[:, s].reshape(n, 1)
-            y = MI_FS.y.reshape(n, 1)
-            clean_up = False
-            if are_data_binned:
-                if MI_FS.categorical:
-                    MI = mico_utils.get_interaction_information_3way(x1, x2, y, "ddd", k) * offdiagonal_param
+        if False:
+            # Three-way interaction info.
+            # JMI & JMIM
+            if s != f:
+                # Off-diagonal -- -1/2(P-1) I(X_{.s}; X_{.k}; y).
+                x1 = MI_FS.X[:, f].reshape(n, 1)
+                x2 = MI_FS.X[:, s].reshape(n, 1)
+                y = MI_FS.y.reshape(n, 1)
+                clean_up = False # No need to clean-up as the 3-way interaction info can be negative.
+                if are_data_binned:
+                    if MI_FS.categorical:
+                        MI = mico_utils.get_interaction_information_3way(x1, x2, y, "ddd", k) * offdiagonal_param
+                    else:
+                        MI = mico_utils.get_interaction_information_3way(x1, x2, y, "ddc", k) * offdiagonal_param
                 else:
-                    MI = mico_utils.get_interaction_information_3way(x1, x2, y, "ddc", k) * offdiagonal_param
+                    if MI_FS.categorical:
+                        MI = mico_utils.get_interaction_information_3way(x1, x2, y, "ccd", k) * offdiagonal_param
+                    else:
+                        MI = mico_utils.get_interaction_information_3way(x1, x2, y, "ccc", k) * offdiagonal_param
             else:
-                if MI_FS.categorical:
-                    MI = mico_utils.get_interaction_information_3way(x1, x2, y, "ccd", k) * offdiagonal_param
+                # Diagonal -- I(X_{.s}; y).
+                x = MI_FS.X[:, f].reshape(n, 1)
+                y = MI_FS.y.reshape(n, 1)
+                #y = MI_FS.y.flatten().reshape(n)
+                if are_data_binned:
+                    if MI_FS.categorical:
+                        MI = mico_utils.get_mutual_information_dd(x, y)
+                    else:
+                        MI = mico_utils.get_mutual_information_cd(y, x, k)
+                        #MI = mico_utils.get_mutual_information_cd(y.reshape(n, 1), x.reshape(n), k)
                 else:
-                    MI = mico_utils.get_interaction_information_3way(x1, x2, y, "ccc", k) * offdiagonal_param
+                    if MI_FS.categorical:
+                        MI = mico_utils.get_mutual_information_cd(x, y, k)
+                    else:
+                        MI = mico_utils.get_mutual_information_cc(x, y, k)
         else:
-            # Diagonal -- I(X_{.s}; y).
-            x = MI_FS.X[:, f].reshape(n, 1)
-            y = MI_FS.y.reshape(n, 1)
-            #y = MI_FS.y.flatten().reshape(n)
-            if are_data_binned:
-                if MI_FS.categorical:
-                    MI = mico_utils.get_mutual_information_dd(x, y)
+            # MI
+            # JMI & JMIM
+            if s != f:
+                # Off-diagonal.
+                y = MI_FS.y.reshape(n, 1)
+                #y = MI_FS.y.flatten().reshape(n, 1)
+                joint = MI_FS.X[:, (s, f)]
+                if are_data_binned:
+                    # Encoding.
+                    joint = mico_utils.encode_discrete_x(joint).reshape(n, 1)
+                    if MI_FS.categorical:
+                        MI = mico_utils.get_mutual_information_dd(joint, y)
+                    else:
+                        MI = mico_utils.get_mutual_information_cd(y, joint, k)
                 else:
-                    MI = mico_utils.get_mutual_information_cd(y, x, k)
-                    #MI = mico_utils.get_mutual_information_cd(y.reshape(n, 1), x.reshape(n), k)
+                    if MI_FS.categorical:
+                        MI = mico_utils.get_mutual_information_cd(joint, y, k)
+                    else:
+                        MI = mico_utils.get_mutual_information_cc(joint, y, k)
             else:
-                if MI_FS.categorical:
-                    MI = mico_utils.get_mutual_information_cd(x, y, k)
+                # Diagonal.
+                x = MI_FS.X[:, f].reshape(n, 1)
+                y = MI_FS.y.reshape(n, 1)
+                #y = MI_FS.y.flatten().reshape(n)
+                if are_data_binned:
+                    if MI_FS.categorical:
+                        MI = mico_utils.get_mutual_information_dd(x, y)
+                    else:
+                        MI = mico_utils.get_mutual_information_cd(y, x, k)
                 else:
-                    MI = mico_utils.get_mutual_information_cc(x, y, k)
+                    if MI_FS.categorical:
+                        MI = mico_utils.get_mutual_information_cd(x, y, k)
+                    else:
+                        MI = mico_utils.get_mutual_information_cc(x, y, k)
     else:
         # MRMR
         if s != f:
@@ -806,6 +843,8 @@ class MutualInformationForwardSelection(MutualInformationBase):
                 # does the mean of the last 5 converge to 0?
                 if np.abs(np.mean(MI_dd[-5:])) < 1e-3:
                     break
+        S = sorted(S)
+        print("S: ", S)
 
         #-------------------------------------------------------------------#
         # SAVE RESULTS                                                      #
@@ -1043,6 +1082,7 @@ class MutualInformationBackwardSelection(MutualInformationBase):
                 if np.abs(np.mean(MI_dd[-5:])) < 1e-3:
                     print("Early stop.")
                     break
+        S = sorted(S)
 
         #-------------------------------------------------------------------#
         # SAVE RESULTS                                                      #
@@ -1395,42 +1435,39 @@ class MutualInformationConicOptimization(MutualInformationBase):
             model.free_mdl()
 
         # Create covariance matrix.
-        mean_vec = np.zeros(num_features)
+        mean_vec = np.zeros(num_features + 1)
         cov_mat = []
-        ref_pt = prim_soln[0]
-        print("ref_pt", ref_pt)
-        for i in range(1, num_features + 1):
-            for j in range(1, num_features + 1):
+        for i in range(0, num_features + 1):
+            for j in range(0, num_features + 1):
                 cov_mat.append(prim_soln[map_ij_to_k(i, j, num_features + 1)])
         #cov_mat = list(map(lambda x : round(x, 4), cov_mat))
         #print(cov_mat)
 
-        # Debug.
-        print("(2P - N)^2 = ", (2 * num_features_sel - num_features) ** 2)
-        s = 0
-        for k in range(0, num_features * num_features):
-            s += cov_mat[k]
-        print('sum_1^N Y_ij= ', s)
-
         # Perturbation.
-        for k in range(0, num_features * num_features):
-            i, j = map_k_to_ij(k, num_features)
+        for k in range(0, (num_features + 1) * (num_features + 1)):
+            i, j = map_k_to_ij(k, num_features + 1)
             if i == j:
                 # Add eps to diagonal.
+                pass
                 cov_mat[k] += 1.E-4
 
-        cov_mat = np.matrix(cov_mat).reshape(num_features, num_features)
+        cov_mat = np.matrix(cov_mat).reshape((num_features + 1), (num_features + 1))
         #print("cov_mat", cov_mat)
 
         pdf = stats.multivariate_normal(mean_vec, cov_mat)
-        sampled_pt = pdf.rvs(1, random_state=self.random_state)
-        if ref_pt >= 0:
-            S = [ i for i, e in enumerate(sampled_pt) if e >= 0]
-        else:
-            S = [ i for i, e in enumerate(sampled_pt) if e <= 0]
-        #print("S: ", S)
+        for i in range(10):
+            sampled_pt = pdf.rvs(1, random_state=i)
+            ref_pt = sampled_pt[0]
+            print("ref_pt", ref_pt)
+            if abs(ref_pt) < 0.1:
+                continue
+            if ref_pt >= 0:
+                S = [i for i, e in enumerate(sampled_pt[1:len(sampled_pt)]) if e >= 0]
+            else:
+                S = [i for i, e in enumerate(sampled_pt[1:len(sampled_pt)]) if e <= 0]
+            print("S: ", S)
 
-        #print(cov_mat.reshape(len(sampled_pt)))
+        print("Sel features =", len(S))
 
         #-------------------------------------------------------------------#
         # SAVE RESULTS                                                      #
