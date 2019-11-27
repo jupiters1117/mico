@@ -84,7 +84,7 @@ if __name__ == "__main__":
         classifiers=[
             'Intended Audience :: Science/Research',
             'Intended Audience :: Developers',
-            'License :: OSI Approved',
+            'License :: The 3-Clause BSD License',
             # 'Programming Language :: C',
             'Programming Language :: Python',
             'Topic :: Software Development',
@@ -95,6 +95,7 @@ if __name__ == "__main__":
             'Operating System :: MacOS',
             # 'Programming Language :: Python :: 2.7',
             'Programming Language :: Python :: 3.6',
+            'Programming Language :: Python :: 3.7',
         ],
         packages=find_packages(),
         install_requires=REQUIREMENTS

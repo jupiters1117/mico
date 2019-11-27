@@ -18,7 +18,6 @@ from . import mico_utils
 from scipy import sparse, stats
 import copy
 from abc import ABCMeta, abstractmethod
-from colinpy import *
 
 
 ###############################################################################
@@ -226,7 +225,9 @@ def get_mico_vector(MI_FS, k, F, s, offdiagonal_param, are_data_binned):
     This function is for when |S| > 1. s is the previously selected feature.
     We exploite the fact that this step is embarrassingly parallel.
     """
+    print("Start {}".format(s))
     MIs = Parallel(n_jobs=MI_FS.n_jobs)(delayed(_get_mico)(f, s, k, MI_FS, offdiagonal_param, are_data_binned) for f in F)
+    print("Done {}".format(s))
     return MIs
 
 
@@ -1233,6 +1234,10 @@ class MutualInformationConicOptimization(MutualInformationBase):
         y : array-like, shape = [n_samples]
             The target values.
         """
+        # Colin
+        import colinpy
+        #from colinpy import *
+        from colinpy import ClnModel, ClnError
 
         #-------------------------------------------------------------------#
         # Initialize the parameters.                                        #

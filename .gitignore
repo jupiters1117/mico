@@ -106,3 +106,5 @@ venv.bak/
 conda_env/
 
 .idea/
+
+examples/xxx/

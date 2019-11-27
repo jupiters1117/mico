@@ -25,9 +25,6 @@ import argparse
 # append them to a list
 import random
 
-# Colin
-from colinpy import *
-
 
 def setup_logging(level):
     logging.basicConfig(format='[%(asctime)s] %(message)s', datefmt='%Y-%m-%d %I:%M:%S %p', level=level)
@@ -150,7 +147,6 @@ def test_mi():
     #print(np.hstack(np.array([X, X])))
 
 
-
 def scale_data(X):
     """"
     Scale the data using SKL.
@@ -191,8 +187,8 @@ def bin_data(X, num_bins):
 
 def test_mifs():
     # variables for dataset
-    s = 200  # Num rows
-    f = 100 # Num cols
+    s = 2000  # Num rows
+    f = 1000 # Num cols
     i = int(.1 * f)  # Proportion of the relevant features
     r = int(.05 * f)  # Proportion of the redundant features
     c = 2
@@ -294,8 +290,8 @@ def test_mibs():
 
 def test_mico():
     # variables for dataset
-    s = 200  # Num rows
-    f = 100 # Num cols
+    s = 500  # Num rows
+    f = 200 # Num cols
     i = int(.1 * f)  # Proportion of the relevant features
     r = int(.05 * f)  # Proportion of the redundant features
     c = 2# Classes
@@ -326,7 +322,7 @@ def test_mico():
 
     # perform feature selection
     mico = MutualInformationConicOptimization(
-        method=method, verbose=verbose, k=k, categorical=True, num_bins=num_bins, scale_data=scale_data, n_jobs=1, n_features=n_features)
+        method=method, verbose=verbose, k=k, categorical=True, num_bins=num_bins, scale_data=scale_data, n_jobs=4, n_features=n_features)
     mico.fit(X, y)
     # calculate precision and sensitivity
     sens, prec = check_selection(np.where(mico.get_support())[0], i, r)
@@ -388,6 +384,9 @@ def test_colin():
      *  End
      */
     """
+    # Colin
+    #from colinpy import *
+    from colinpy import ClnModel, ClnError
 
     row1_idx = [ 0,   1,   2,   3,   13  ]
     row1_val = [ 3.0, 1.0, 1.0, 3.0, 1.0 ]
