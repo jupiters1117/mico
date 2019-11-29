@@ -7,7 +7,7 @@ MICO: Mutual Information and Conic Optimization for feature selection.
 
 Related blog post here_
 
-.. _here: http://danielhomola.com/2016/01/31/mifs-parallelized-mutual-information-based-feature-selection-module/)
+.. _here: http://danielhomola.com/2016/01/31/mifs-parallelized-mutual-information-based-feature-selection-module/
 
 Dependencies
 ------------

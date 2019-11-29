@@ -218,7 +218,7 @@ def _get_mi(f, s, k, MI_FS, are_data_binned, use_nan_for_invalid_mi=True):
     return _clean_up_MI(MI, use_nan_for_invalid_mi)
 
 
-def get_mico_vector(MI_FS, k, F, s, offdiagonal_param, are_data_binned):
+def get_mico_vector(MI_FS, k, F, s, offdiagonal_param, are_data_binned, Nx=None, n_jobs=1):
     """
     Calculates the Mututal Information between each feature in F and s.
 
@@ -226,12 +226,15 @@ def get_mico_vector(MI_FS, k, F, s, offdiagonal_param, are_data_binned):
     We exploite the fact that this step is embarrassingly parallel.
     """
     print("Start {}".format(s))
-    MIs = Parallel(n_jobs=MI_FS.n_jobs)(delayed(_get_mico)(f, s, k, MI_FS, offdiagonal_param, are_data_binned) for f in F)
+    if n_jobs <= 1:
+        MIs = [_get_mico(f, s, k, MI_FS, offdiagonal_param, are_data_binned, Nx=Nx) for f in F]
+    else:
+        MIs = Parallel(n_jobs=MI_FS.n_jobs)(delayed(_get_mico)(f, s, k, MI_FS, offdiagonal_param, are_data_binned, Nx=Nx) for f in F)
     print("Done {}".format(s))
     return MIs
 
 
-def _get_mico(f, s, k, MI_FS, offdiagonal_param, are_data_binned, use_nan_for_invalid_mi=False):
+def _get_mico(f, s, k, MI_FS, offdiagonal_param, are_data_binned, use_nan_for_invalid_mi=False, Nx=None):
     """
     A Semidefinite Programming Based Search Strategy for Feature Selection with Mutual Information Measure
     Tofigh Naghibi , Sarah Hoffmann and Beat Pfister
@@ -279,7 +282,7 @@ def _get_mico(f, s, k, MI_FS, offdiagonal_param, are_data_binned, use_nan_for_in
                         #MI = mico_utils.get_mutual_information_cd(y.reshape(n, 1), x.reshape(n), k)
                 else:
                     if MI_FS.categorical:
-                        MI = mico_utils.get_mutual_information_cd(x, y, k)
+                        MI = mico_utils.get_mutual_information_cd(x, y, k, Nx)
                     else:
                         MI = mico_utils.get_mutual_information_cc(x, y, k)
         else:
@@ -299,7 +302,7 @@ def _get_mico(f, s, k, MI_FS, offdiagonal_param, are_data_binned, use_nan_for_in
                         MI = mico_utils.get_mutual_information_cd(y, joint, k)
                 else:
                     if MI_FS.categorical:
-                        MI = mico_utils.get_mutual_information_cd(joint, y, k)
+                        MI = mico_utils.get_mutual_information_cd(joint, y, k, Nx)
                     else:
                         MI = mico_utils.get_mutual_information_cc(joint, y, k)
             else:
@@ -314,7 +317,7 @@ def _get_mico(f, s, k, MI_FS, offdiagonal_param, are_data_binned, use_nan_for_in
                         MI = mico_utils.get_mutual_information_cd(y, x, k)
                 else:
                     if MI_FS.categorical:
-                        MI = mico_utils.get_mutual_information_cd(x, y, k)
+                        MI = mico_utils.get_mutual_information_cd(x, y, k, Nx)
                     else:
                         MI = mico_utils.get_mutual_information_cc(x, y, k)
     else:
@@ -336,7 +339,7 @@ def _get_mico(f, s, k, MI_FS, offdiagonal_param, are_data_binned, use_nan_for_in
                 if MI_FS.categorical:
                     MI = mico_utils.get_mutual_information_dd(x, y)
                 else:
-                    MI = mico_utils.get_mutual_information_cd(y, x, k)
+                    MI = mico_utils.get_mutual_information_cd(y, x, k, Nx)
                     #MI = mico_utils.get_mutual_information_cd(y.reshape(n, 1), x.reshape(n), k)
             else:
                 if MI_FS.categorical:
@@ -1271,17 +1274,30 @@ class MutualInformationConicOptimization(MutualInformationBase):
         print("S", S)
 
         # Calculate the MI matrix.
+        if self.categorical:
+            Nx = []
+            classes = np.unique(y)
+            sum_y = {}
+            for yi in classes:
+                sum_y[yi] = np.sum(y == yi)
+            for yi in y.flatten():
+                Nx.append(sum_y[yi])
+
+        # Parallelize the outer loop.
+        Qtri = Parallel(n_jobs=self.n_jobs)(delayed(get_mico_vector)(
+            self, self.k, list(range(i, num_features, 1)), s, offdiagonal_param, self._are_data_binned(), Nx if self.categorical else None, 1
+        ) for i, s in enumerate(S))
+
         for i, s in enumerate(S):
             S2 = list(range(i, num_features, 1))
-            Q[s, S2] = get_mico_vector(self, self.k, S2, s, offdiagonal_param, self._are_data_binned())
+            Q[s, S2] = Qtri[s]
+            #Q[s, S2] = get_mico_vector(self, self.k, S2, s, offdiagonal_param, self._are_data_binned(), Nx if self.categorical else None, self.n_jobs)
 
         # Ensure the MI matrix is symmetric.
         for i in range(num_features):
             for j in range(i + 1, num_features):
                 Q[j, i] = Q[i, j]
         #feature_mi_matrix = mico_utils.make_mat_sym(feature_mi_matrix)
-
-        print(Q)
 
         # Calculate Q^T e.
         QTe = np.zeros(num_features)

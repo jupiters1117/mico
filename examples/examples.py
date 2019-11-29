@@ -217,7 +217,7 @@ def test_mifs():
 
     # perform feature selection
     mico = MutualInformationForwardSelection(
-        method=method, verbose=verbose, k=k, categorical=True, num_bins=num_bins, scale_data=scale_data, n_jobs=4, early_stop_steps=early_stop_steps)
+        method=method, verbose=verbose, k=k, categorical=True, num_bins=num_bins, scale_data=scale_data, n_jobs=1, early_stop_steps=early_stop_steps)
     mico.fit(X, y)
     # calculate precision and sensitivity
     sens, prec = check_selection(np.where(mico.get_support())[0], i, r)
@@ -290,8 +290,8 @@ def test_mibs():
 
 def test_mico():
     # variables for dataset
-    s = 20000  # Num rows
-    f = 40 # Num cols
+    s = 10000  # Num rows
+    f = 400 # Num cols
     i = int(.1 * f)  # Proportion of the relevant features
     r = int(.05 * f)  # Proportion of the redundant features
     c = 2# Classes

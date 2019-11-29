@@ -142,7 +142,7 @@ def get_mutual_information_cc(x, y, k=5):
     return res
 
 
-def get_mutual_information_cd(x, y, k):
+def get_mutual_information_cd(x, y, k, Nx=None):
     """
     Calculates the mutual information between a continuous vector x and a
     discrete class vector y.
@@ -164,17 +164,18 @@ def get_mutual_information_cd(x, y, k):
     dist_to_k_neighbors = np.empty(n)
 
     # number of points within each point's class
-    Nx = []
-    if False:
-        for yi in y:
-            #print(np.sum(y == yi))
-            Nx.append(np.sum(y == yi))
-    else:
-        sum_y = {}
-        for yi in classes:
-            sum_y[yi] = np.sum(y == yi)
-        for yi in y.flatten():
-            Nx.append(sum_y[yi])
+    if Nx is None:
+        Nx = []
+        if False:
+            for yi in y:
+                #print(np.sum(y == yi))
+                Nx.append(np.sum(y == yi))
+        else:
+            sum_y = {}
+            for yi in classes:
+                sum_y[yi] = np.sum(y == yi)
+            for yi in y.flatten():
+                Nx.append(sum_y[yi])
 
     #print(">> KNN")
     # find the distance of the kth in-class point
@@ -192,6 +193,7 @@ def get_mutual_information_cd(x, y, k):
         #print(bn.nanmax(dist, axis=1), dist[:, -1])
     #print("dist_to_k_neighbors=", dist_to_k_neighbors)
 
+    #print(">> FIT-KNN")
     # find the number of points within the distance of the kth in-class point
     knn.fit(x)
     # Note: this is not supported in SKL, but it will still generate the correct result (turn DEBUG to test the implementation).
