@@ -187,15 +187,15 @@ def bin_data(X, num_bins):
 
 def test_mifs():
     # variables for dataset
-    s = 2000  # Num rows
-    f = 1000 # Num cols
+    s = 5000  # Num rows
+    f = 100 # Num cols
     i = int(.1 * f)  # Proportion of the relevant features
     r = int(.05 * f)  # Proportion of the redundant features
     c = 2
 
     method = 'JMIM'
     num_bins = 0
-    scale_data = True
+    scale_data = False
     k = max(1, int(f * 0.25))
     verbose = 2
     early_stop_steps = 10
@@ -217,7 +217,7 @@ def test_mifs():
 
     # perform feature selection
     mico = MutualInformationForwardSelection(
-        method=method, verbose=verbose, k=k, categorical=True, num_bins=num_bins, scale_data=scale_data, n_jobs=1, early_stop_steps=early_stop_steps)
+        method=method, verbose=verbose, k=k, categorical=True, num_bins=num_bins, scale_data=scale_data, n_jobs=4, early_stop_steps=early_stop_steps)
     mico.fit(X, y)
     # calculate precision and sensitivity
     sens, prec = check_selection(np.where(mico.get_support())[0], i, r)
@@ -290,8 +290,8 @@ def test_mibs():
 
 def test_mico():
     # variables for dataset
-    s = 500  # Num rows
-    f = 200 # Num cols
+    s = 20000  # Num rows
+    f = 40 # Num cols
     i = int(.1 * f)  # Proportion of the relevant features
     r = int(.05 * f)  # Proportion of the redundant features
     c = 2# Classes

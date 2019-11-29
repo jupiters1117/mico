@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# mifs documentation build configuration file, created by
+# mico documentation build configuration file, created by
 # sphinx-quickstart on Mon Jan 18 14:44:12 2016.
 #
 # This file is execfile()d with the current directory set to its
@@ -43,13 +43,16 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
     'numpydoc',
-    'sphinx.ext.pngmath',
-    'sphinx.ext.ifconfig',
-    'sphinx.ext.viewcode',
-    'sphinx_gallery.gen_gallery',
-    'sphinx.ext.autosummary'
+    'sphinx.ext.mathjax',
+    #'sphinx.ext.pngmath',
+    #'sphinx.ext.imgmath',
+    #'sphinx.ext.ifconfig',
+    #'sphinx.ext.viewcode',
+    #'sphinx_gallery.gen_gallery',
+    #'sphinx.ext.autosummary'
 ]
 
+'''
 autosummary_generate = True
 
 autodoc_default_flags = ['members', 'inherited-members']
@@ -59,6 +62,7 @@ sphinx_gallery_conf = {
     'examples_dirs' : '../examples',
     # path where to save gallery generated examples
     'gallery_dirs'  : 'auto_examples'}
+'''
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -79,15 +83,15 @@ plot_gallery = True
 master_doc = 'index'
 
 # General information about the project.
-project = u'mifs'
-copyright = u'2016, G. Lemaitre, F. Nogueira, D. Oliveira, C. Aridas'
+project = u'MICO'
+copyright = u'2019, KuoLing Huang'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
 # The short X.Y version.
-__version__ = '0.2.0.dev0'
+__version__ = '0.1.0.dev0'
 version = __version__
 # The full version, including alpha/beta/rc tags.
 release = __version__
@@ -213,7 +217,7 @@ html_static_path = ['_static']
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'mifsdoc'
+htmlhelp_basename = 'micodoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -233,8 +237,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    ('index', 'mifs.tex', u'mifs Documentation',
-     u'D. Homola', 'manual'),
+    ('index', 'mico.tex', u'mico Documentation',
+     u'K.L. Huang', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -263,8 +267,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'mifs', u'mifs Documentation',
-     [u'D. Homola'], 1)
+    ('index', 'mico', u'mico Documentation',
+     [u'K.L. Huang'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -277,11 +281,12 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    ('index', 'mifs', u'mifs Documentation',
-     u'D. Homola', 'mifs', 'Parallelized Mutual Information based Feature Selection module.',
+    ('index', 'mico', u'mico Documentation',
+     u'K.L. Huang', 'mico', 'Mutual Information and Conic Optimization for feature selection.',
      'Miscellaneous'),
 ]
 
+'''
 def generate_example_rst(app, what, name, obj, options, lines):
     # generate empty examples files, so that we don't get
     # inclusion errors if there are no examples for a class / module
@@ -293,7 +298,9 @@ def generate_example_rst(app, what, name, obj, options, lines):
 
 
 def setup(app):
+    #pass
     app.connect('autodoc-process-docstring', generate_example_rst)
+'''
 
 # Documents to append as an appendix to all manuals.
 #texinfo_appendices = []

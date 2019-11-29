@@ -155,6 +155,8 @@ def get_mutual_information_cd(x, y, k):
     Brian C. Ross, 2014, PLOS ONE
     Mutual Information between Discrete and Continuous Data Sets
     """
+    #print("BGN KNN")
+
     n = x.shape[0]
     classes = np.unique(y)
     knn = NearestNeighbors(n_neighbors=k)
@@ -163,9 +165,18 @@ def get_mutual_information_cd(x, y, k):
 
     # number of points within each point's class
     Nx = []
-    for yi in y:
-        Nx.append(np.sum(y == yi))
+    if False:
+        for yi in y:
+            #print(np.sum(y == yi))
+            Nx.append(np.sum(y == yi))
+    else:
+        sum_y = {}
+        for yi in classes:
+            sum_y[yi] = np.sum(y == yi)
+        for yi in y.flatten():
+            Nx.append(sum_y[yi])
 
+    #print(">> KNN")
     # find the distance of the kth in-class point
     # See https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.NearestNeighbors.html#sklearn.neighbors.NearestNeighbors.kneighbors
     for c in classes:
@@ -186,6 +197,7 @@ def get_mutual_information_cd(x, y, k):
     # Note: this is not supported in SKL, but it will still generate the correct result (turn DEBUG to test the implementation).
     m = knn.radius_neighbors(radius=dist_to_k_neighbors, return_distance=False)
     #print(m)
+    #print("DONE KNN")
 
     if DEBUG:
         print("Warning: Debug mode.")
@@ -210,6 +222,7 @@ def get_mutual_information_cd(x, y, k):
     MI = psi(n) - np.mean(psi(Nx)) + psi(k) - np.mean(psi(m_size))
     #print("MI = ", MI)
     #raise ValueError("STOP")
+    #print(">> MI")
 
     return MI
 

@@ -108,3 +108,9 @@ conda_env/
 .idea/
 
 examples/xxx/
+
+doc/_build/
+
+doc/auto_examples/
+
+doc/generated/

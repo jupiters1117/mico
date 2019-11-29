@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 ##############################
-Welcome to MIFS documentation!
+Welcome to MICO documentation!
 ##############################
 
 Contents:

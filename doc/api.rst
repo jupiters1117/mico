@@ -1,23 +1,35 @@
 ##########
-`MIFS` API
+`MICO` API
 ##########
 
-This is the full API documentation of the `MIFS` toolbox.
+This is the full API documentation of the `MICO` toolbox.
 
-.. _mifs_ref:
+.. _mico_methods:
 
-MIFS methods
+MICO methods
 ============
 
-.. automodule:: mifs
+.. automodule:: mico
     :no-members:
     :no-inherited-members:
 
+
+
+
+
+
 Classes
 -------
-.. currentmodule:: mifs
+.. currentmodule:: mico
 
 .. autosummary::
    :toctree: generated/
 
-   MutualInformationFeatureSelector
+   MutualInformationBase
+
+   MutualInformationForwardSelection
+
+   MutualInformationBackwardSelection
+
+   MutualInformationConicOptimization
+
