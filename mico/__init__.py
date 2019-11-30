@@ -1,12 +1,20 @@
-"""Parallelized Mutual Information based Feature Selection module.
-
-``mifs`` is a Parallelized Mutual Information based Feature
-Selection module.
-
 """
+MICO: Mutual Information and Conic Optimization for feature selection.
 
+Github repo : https://github.com/jupiters1117/mico
+Author      : KuoLing Huang <jupiters1117@gmail.com>
+License     : BSD 3 clause
+
+
+Note
+----
+MICO is heavily inspired from MIFS by Daniel Homola:
+
+Github repo : https://github.com/danielhomola/mifs
+Author      : Daniel Homola <dani.homola@gmail.com>
+License     : BSD 3 clause
+"""
 from .mico import MutualInformationForwardSelection, MutualInformationBackwardSelection, MutualInformationConicOptimization
-#from .mico_utils import get_entropy
 from .version import _check_module_dependencies, __version__
 
 _check_module_dependencies()
@@ -15,7 +23,6 @@ _check_module_dependencies()
 # flushed if the version of certain modules changes (eg nibabel, as it
 # does not respect the backward compatibility in some of its internal
 # structures
-# This  is used in nilearn._utils.cache_mixin
 CHECK_CACHE_VERSION = True
 
 # list all available submodules and version

@@ -1,48 +1,28 @@
 """
-Example showing the use of the mico module.
+MICO: Mutual Information and Conic Optimization for feature selection.
+
+Github repo : https://github.com/jupiters1117/mico
+Author      : KuoLing Huang <jupiters1117@gmail.com>
+License     : BSD 3 clause
+
+
+Note
+----
+MICO is heavily inspired from MIFS by Daniel Homola:
+
+Github repo : https://github.com/danielhomola/mifs
+Author      : Daniel Homola <dani.homola@gmail.com>
+License     : BSD 3 clause
 """
 from mico import MutualInformationForwardSelection, MutualInformationBackwardSelection, MutualInformationConicOptimization
 from sklearn.datasets import make_classification, make_regression
 import numpy as np 
-import pyitlib
-#from mico import get_entropy
-#from ..mico.mico_utils import get_entropy
-#import mico.mi
-#import sys
-import math
-#sys.path.append("..")
-from scipy.special import gamma, psi
-from sklearn.neighbors import NearestNeighbors
-import pandas as pd
-import copy
-from scipy import sparse
-
 import logging
 import argparse
-
-# Python code to generate
-# random numbers and
-# append them to a list
-import random
 
 
 def setup_logging(level):
     logging.basicConfig(format='[%(asctime)s] %(message)s', datefmt='%Y-%m-%d %I:%M:%S %p', level=level)
-
-
-# Function to generate
-# and append them
-# start = starting range,
-# end = ending range
-# num = number of
-# elements needs to be appended
-def get_rand_list(start, end, num):
-    res = []
-
-    for j in range(num):
-        res.append(random.randint(start, end))
-
-    return res
 
 
 def check_selection(selected, i, r):

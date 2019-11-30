@@ -20,6 +20,22 @@ EPS = np.finfo(float).eps
 DEBUG = False
 
 
+import random
+# Function to generate
+# and append them
+# start = starting range,
+# end = ending range
+# num = number of
+# elements needs to be appended
+def get_rand_list(start, end, num):
+    res = []
+
+    for j in range(num):
+        res.append(random.randint(start, end))
+
+    return res
+
+
 def make_mat_sym(mat):
     return (mat.transpose() + mat) / 2.0
 
