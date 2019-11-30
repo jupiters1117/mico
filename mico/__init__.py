@@ -22,7 +22,7 @@ CHECK_CACHE_VERSION = True
 __all__ = \
 [
     'MutualInformationForwardSelection',
-    'MutualInformationConicOptimization',
+    'MutualInformationBackwardSelection',
     'MutualInformationConicOptimization',
     '__version__'
 ]

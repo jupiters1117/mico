@@ -227,12 +227,12 @@ def get_mico_vector(MI_FS, k, F, s, offdiagonal_param, are_data_binned, Nx=None,
     This function is for when |S| > 1. s is the previously selected feature.
     We exploit the fact that this step is embarrassingly parallel.
     """
-    print("Start {}".format(s))
+    #print("Start {}".format(s))
     if n_jobs <= 1:
         MIs = [_get_mico(f, s, k, MI_FS, offdiagonal_param, are_data_binned, Nx=Nx) for f in F]
     else:
         MIs = Parallel(n_jobs=MI_FS.n_jobs)(delayed(_get_mico)(f, s, k, MI_FS, offdiagonal_param, are_data_binned, Nx=Nx) for f in F)
-    print("Done {}".format(s))
+    #print("Done {}".format(s))
     return MIs
 
 
@@ -854,6 +854,7 @@ class MutualInformationForwardSelection(MutualInformationBase):
     def _print_init_result(self):
         logging.info("Started MIFS.")
         logging.info(" - Method        : {}".format(self.method))
+        logging.info(" - Num. threads  : {}".format(self.n_jobs))
         logging.info(" - Num. features : {}".format(self.n_features))
         logging.info("{0:>5}{1:15}".format("Iter", "    Current MI"))
 
@@ -1002,6 +1003,7 @@ class MutualInformationBackwardSelection(MutualInformationBase):
         """
         self.X, y = self._init_data(X, y)
         n, p = X.shape
+        num_features = p
         self.y = y.reshape(n, 1)
 
         # list of selected features
@@ -1028,14 +1030,22 @@ class MutualInformationBackwardSelection(MutualInformationBase):
             xy_MI = _replace_vec_nan_with_zero(xy_MI)
             #print("xy_MI", xy_MI)
 
-        # Parallelize in the outer loop.
-        feature_mi_matrix = np.array(Parallel(n_jobs=self.n_jobs)(delayed(get_mi_vector)(
-            self, self.k, S, s, self._are_data_binned(), n_jobs=1) for s in S))
-        #for s in S:
-        #    feature_mi_matrix[s, S] = get_mi_vector(self, self.k, S, s, self._are_data_binned(), n_jobs=self.n_jobs)
-
-        # Ensure the MI matrix is symmetric.
-        feature_mi_matrix = mico_utils.make_mat_sym(feature_mi_matrix)
+        if True:
+            # Parallelize the outer loop - faster.
+            feature_mi_matrix_tri = Parallel(n_jobs=self.n_jobs)(delayed(get_mi_vector)(
+                self, self.k, list(range(i, num_features, 1)), s, self._are_data_binned(), n_jobs=1) for i, s in enumerate(S))
+            for i, s in enumerate(S):
+                feature_mi_matrix[s, list(range(i, num_features, 1))] = feature_mi_matrix_tri[s]
+            # Ensure the MI matrix is symmetric.
+            for i in range(num_features):
+                for j in range(i + 1, num_features):
+                    feature_mi_matrix[j, i] = feature_mi_matrix[i, j]
+        else:
+            # Parallelize the inner loop - slower.
+            for s in S:
+                feature_mi_matrix[s, S] = get_mi_vector(self, self.k, S, s, self._are_data_binned(), n_jobs=self.n_jobs)
+            # Ensure the MI matrix is symmetric.
+            feature_mi_matrix = mico_utils.make_mat_sym(feature_mi_matrix)
         #print(feature_mi_matrix)
 
         #-------------------------------------------------------------------#
@@ -1111,6 +1121,7 @@ class MutualInformationBackwardSelection(MutualInformationBase):
     def _print_init_result(self):
         logging.info("Started MIBS.")
         logging.info(" - Method        : {}".format(self.method))
+        logging.info(" - Num. threads  : {}".format(self.n_jobs))
         logging.info(" - Num. features : {}".format(self.n_features))
         logging.info("{0:>5}{1:15}".format("Iter", "    Current MI"))
 
@@ -1306,15 +1317,19 @@ class MutualInformationConicOptimization(MutualInformationBase):
             for yi in y.flatten():
                 Nx.append(sum_y[yi])
 
-        # Parallelize the outer loop.
-        Qtri = Parallel(n_jobs=self.n_jobs)(delayed(get_mico_vector)(
-            self, self.k, list(range(i, num_features, 1)), s, offdiagonal_param, self._are_data_binned(), Nx if self.categorical else None, 1
-        ) for i, s in enumerate(S))
+        if True:
+            # Parallelize the outer loop - faster.
+            Qtri = Parallel(n_jobs=self.n_jobs)(delayed(get_mico_vector)(
+                self, self.k, list(range(i, num_features, 1)), s, offdiagonal_param, self._are_data_binned(), Nx if self.categorical else None, 1
+            ) for i, s in enumerate(S))
 
-        for i, s in enumerate(S):
-            S2 = list(range(i, num_features, 1))
-            Q[s, S2] = Qtri[s]
-            #Q[s, S2] = get_mico_vector(self, self.k, S2, s, offdiagonal_param, self._are_data_binned(), Nx if self.categorical else None, self.n_jobs)
+            for i, s in enumerate(S):
+                Q[s, list(range(i, num_features, 1))] = Qtri[s]
+        else:
+            # Parallelize the outer loop - slower.
+            for i, s in enumerate(S):
+                S2 = list(range(i, num_features, 1))
+                Q[s, S2] = get_mico_vector(self, self.k, S2, s, offdiagonal_param, self._are_data_binned(), Nx if self.categorical else None, self.n_jobs)
 
         # Ensure the MI matrix is symmetric.
         for i in range(num_features):
@@ -1390,7 +1405,7 @@ class MutualInformationConicOptimization(MutualInformationBase):
 
             # Set parameters.
             model.set_ipa("Model/Verbose", 3 if self.verbose >= 2 else self.verbose)
-            #model.set_ipa("Model/Presolver/PresolveLv", 1)
+            model.set_ipa("Model/Presolver/PresolveLv", 1)
             model.set_ipa("Ips/Solver/NumThreads", self.n_jobs)
             model.set_ipa("Ips/Solver/Type", 2)
 
@@ -1476,6 +1491,7 @@ class MutualInformationConicOptimization(MutualInformationBase):
             model.free_mdl()
 
         # Create covariance matrix.
+        logging.info("Started generating covariance matrix.")
         mean_vec = np.zeros(num_features + 1)
         cov_mat = []
         for i in range(0, num_features + 1):
@@ -1595,6 +1611,7 @@ class MutualInformationConicOptimization(MutualInformationBase):
     def _print_init_result(self, num_features_sel, num_features, offdiagonal_param):
         logging.info("Started MICO.")
         logging.info(" - Method        : {}".format(self.method))
+        logging.info(" - Num. threads  : {}".format(self.n_jobs))
         logging.info(" - Tot. features : {}".format(num_features))
         logging.info(" - Sel. features : {}".format(num_features_sel))
         logging.info(" - Off-diag param: {}".format(offdiagonal_param))
