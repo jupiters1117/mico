@@ -72,7 +72,7 @@ def check_selection(selected, i, r):
 
 def test_mifs():
     # variables for dataset
-    s = 2000  # Num rows
+    s = 200  # Num rows
     f = 100 # Num cols
     i = int(.1 * f)  # Proportion of the relevant features
     r = int(.05 * f)  # Proportion of the redundant features
@@ -103,15 +103,16 @@ def test_mifs():
     #print(sum(y) / len(y))
 
     # perform feature selection
-    mico = MutualInformationForwardSelection(
+    mifs = MutualInformationForwardSelection(
         method=method, verbose=verbose, k=k, categorical=True, num_bins=num_bins, scale_data=scale_data,
         n_jobs=n_jobs, early_stop_steps=early_stop_steps)
-    mico.fit(X, y)
+    mifs.fit(X, y)
     # calculate precision and sensitivity
-    sens, prec = check_selection(np.where(mico.get_support())[0], i, r)
+    sens, prec = check_selection(np.where(mifs.get_support())[0], i, r)
     print('Sensitivity: ' + str(sens) + '    Precision: ' + str(prec))
     #print("Selected features: {}".format(np.where(mico.get_support())[0]))
-    # print(mico.get_support())
+    print(mifs.get_support())
+    print(mifs.ranking_)
 
     # simulate dataset with continuous y
     X, y = make_regression(n_samples=s, n_features=f, n_informative=i,
@@ -128,7 +129,7 @@ def test_mifs():
 
 def test_mibs():
     # variables for dataset
-    s = 2000  # Num rows
+    s = 200  # Num rows
     f = 100 # Num cols
     i = int(.1 * f)  # Proportion of the relevant features
     r = int(.05 * f)  # Proportion of the redundant features
@@ -140,7 +141,7 @@ def test_mibs():
     scale_data = False
     k = max(1, int(f * 0.25))
     verbose = 2
-    early_stop_steps = 10
+    early_stop_steps = 0
 
     print("Parameters.")
     print(" - method      : {}".format(method))
@@ -159,14 +160,15 @@ def test_mibs():
     #print(sum(y) / len(y))
 
     # perform feature selection
-    mico = MutualInformationBackwardSelection(
+    mibs = MutualInformationBackwardSelection(
         method=method, verbose=verbose, k=k, categorical=True, num_bins=num_bins, scale_data=scale_data,
         n_jobs=n_jobs, early_stop_steps=early_stop_steps)
-    mico.fit(X, y)
+    mibs.fit(X, y)
     # calculate precision and sensitivity
-    sens, prec = check_selection(np.where(mico.get_support())[0], i, r)
+    sens, prec = check_selection(np.where(mibs.get_support())[0], i, r)
     print('Sensitivity: ' + str(sens) + '    Precision: ' + str(prec))
-    #print("Selected features: {}".format(np.where(mico.get_support())[0]))
+    print("Selected features: {}".format(np.where(mibs.get_support())[0]))
+    print(mibs.ranking_)
 
     # simulate dataset with continuous y
     X, y = make_regression(n_samples=s, n_features=f, n_informative=i,
@@ -183,7 +185,7 @@ def test_mibs():
 
 def test_mico():
     # variables for dataset
-    s = 2000  # Num rows
+    s = 200  # Num rows
     f = 100 # Num cols
     i = int(.1 * f)  # Proportion of the relevant features
     r = int(.05 * f)  # Proportion of the redundant features
@@ -226,6 +228,8 @@ def test_mico():
     sens, prec = check_selection(np.where(mico.get_support())[0], i, r)
     print('Sensitivity: ' + str(sens) + '    Precision: ' + str(prec))
     #print("Selected features: {}".format(np.where(mico.get_support())[0]))
+    print(mico.feature_importances_)
+    print(mico.ranking_)
 
     # simulate dataset with continuous y
     X, y = make_regression(n_samples=s, n_features=f, n_informative=i,
