@@ -99,14 +99,17 @@ def _clean_up_MI(MI, use_nan_for_invalid_mi):
         return np.nan if use_nan_for_invalid_mi else 0.0
 
 
-def get_first_mi_vector(MI_FS, k, are_data_binned):
+def get_first_mi_vector(MI_FS, k, are_data_binned, n_jobs=1):
     """
     Calculates the Mututal Information between each feature in X and y.
 
     This function is for when |S| = 0. We select the first feature in S.
     """
     n, p = MI_FS.X.shape
-    MIs = Parallel(n_jobs=MI_FS.n_jobs)(delayed(_get_first_mi)(i, k, MI_FS, are_data_binned) for i in range(p))
+    if n_jobs <= 1:
+        MIs = [_get_first_mi(i, k, MI_FS, are_data_binned) for i in range(p)]
+    else:
+        MIs = Parallel(n_jobs=MI_FS.n_jobs)(delayed(_get_first_mi)(i, k, MI_FS, are_data_binned) for i in range(p))
     return MIs
 
 
@@ -508,7 +511,6 @@ class MutualInformationBase(BaseEstimator, SelectorMixin, metaclass=ABCMeta):
             lv = logging.DEBUG
         setup_logging(level=lv, filename=filename)
 
-
     def _get_support_mask(self):
         if self._support_mask is None:
             raise ValueError('mRMR has not been fitted yet!')
@@ -621,6 +623,56 @@ class MutualInformationBase(BaseEstimator, SelectorMixin, metaclass=ABCMeta):
         S.remove(i)
         return S
 
+    def _calc_xQx(self, Q, curr_soln):
+        score = 0
+        n = Q.shape[0]
+        for i in range(n):
+            if curr_soln[i] > 0:
+                for j in range(n):
+                    if curr_soln[j] > 0 and not np.isnan(Q[i, j]):
+                        score += Q[i, j]
+
+        return score
+
+    def _convert_idx_array_to_mask_array(self, idx_array, n):
+        mask_array = np.zeros(n, dtype=int)
+        mask_array[idx_array] = 1
+        return mask_array
+
+    def _convert_mask_array_to_idx_array(self, mask_array):
+        return np.where(mask_array)
+
+    def _generate_feature_importances(self, best_soln, Q, num_features):
+        feature_importances = []
+        require_clean_run = False
+        best_soln_binary = self._convert_idx_array_to_mask_array(best_soln, num_features)
+        best_score = self._calc_xQx(Q, best_soln_binary)
+
+        for i in range(len(best_soln_binary)):
+            if best_soln_binary[i] == 1:
+                # Remove the feature and recalculate the score.
+                best_soln_binary[i] = 0
+                curr_score = self._calc_xQx(Q, best_soln_binary)
+                diff_score = best_score - curr_score
+                best_soln_binary[i] = 1
+                if diff_score < 0:
+                    logging.info("Warning: Feature {} has negative score {1}".format(i, diff_score))
+                    best_soln_binary[i] = 0
+                    require_clean_run = True
+                feature_importances.append(diff_score)
+            else:
+                feature_importances.append(0.0)
+
+        if require_clean_run:
+            best_soln = self._convert_mask_array_to_idx_array(best_soln_binary)
+            best_score = self._calc_xQx(Q, best_soln_binary)
+
+        # Normalize and rank.
+        feature_importances = feature_importances / sum(feature_importances)
+        feature_raking = list(map(int, rankdata(-feature_importances)))
+
+        return best_soln, best_score, feature_importances, feature_raking
+
 
 class MutualInformationForwardSelection(MutualInformationBase):
     """
@@ -676,6 +728,9 @@ class MutualInformationForwardSelection(MutualInformationBase):
 
     support_ : array of length X.shape[1]
         The mask array of selected features.
+
+    feature_importances_ : array of shape n_features
+        The feature importance scores of the selected features.
 
     ranking_ : array of shape n_features
         The feature ranking of the selected features, with the first being
@@ -746,6 +801,7 @@ class MutualInformationForwardSelection(MutualInformationBase):
 
         # Attributes.
         self.n_features_ = 0
+        self.feature_importances_ = []
         self.ranking_ = []
         self.mi_ = []
 
@@ -763,6 +819,7 @@ class MutualInformationForwardSelection(MutualInformationBase):
         """
         self.X, y = self._init_data(X, y)
         n, p = X.shape
+        num_features = p
         self.y = y.reshape((n, 1))
 
         # list of selected features
@@ -784,9 +841,9 @@ class MutualInformationForwardSelection(MutualInformationBase):
         self._print_init_result()
 
         #-------------------------------------------------------------------#
-        # FIND FIRST FEATURE                                                #
+        # Find first feature                                                #
         #-------------------------------------------------------------------#
-        xy_MI = np.array(get_first_mi_vector(self, self.k, self._are_data_binned()))
+        xy_MI = np.array(get_first_mi_vector(self, self.k, self._are_data_binned(), n_jobs=1))
         xy_MI = _replace_vec_nan_with_zero(xy_MI)
         #print("xy_MI", xy_MI)
 
@@ -800,12 +857,12 @@ class MutualInformationForwardSelection(MutualInformationBase):
         self.ranking_.append(selected)
 
         #-------------------------------------------------------------------#
-        # FIND SUBSEQUENT FEATURES                                          #
+        # Find Subsequent features                                          #
         #-------------------------------------------------------------------#
         while len(S) < n_features:
             # loop through the remaining unselected features and calculate MI
             s = len(S) - 1
-            feature_mi_matrix[s, F] = get_mi_vector(self, self.k, F, S[-1], self._are_data_binned())
+            feature_mi_matrix[s, F] = get_mi_vector(self, self.k, F, S[-1], self._are_data_binned(), n_jobs=1)
 
             # make decision based on the chosen FS algorithm
             fmm = feature_mi_matrix[:len(S), F]
@@ -846,12 +903,47 @@ class MutualInformationForwardSelection(MutualInformationBase):
         S = sorted(S)
 
         #-------------------------------------------------------------------#
+        # Calculate final MIs                                               #
+        #-------------------------------------------------------------------#
+        logging.info("Started calculating final MI matrix.")
+        num_features_S = len(S)
+        feature_mi_matrix = np.zeros((p, p))
+        feature_mi_matrix[:] = np.nan
+        if True:
+            # Parallelize the outer loop - faster.
+            feature_mi_matrix_partial_tri = Parallel(n_jobs=self.n_jobs)(delayed(get_mi_vector)(
+                self, self.k, S[i:], s, self._are_data_binned(), n_jobs=1) for i, s in enumerate(S))
+            # Get the MI matrix.
+            for i in range(num_features_S):
+                for j in range(i, num_features_S):
+                    feature_mi_matrix[S[i], S[j]] = feature_mi_matrix_partial_tri[i][j - i]
+                    if i != j:
+                        feature_mi_matrix[S[j], S[i]] = feature_mi_matrix[S[i], S[j]]
+        else:
+            # Parallelize the inner loop - slower.
+            all_S = list(range(p))
+            for s in all_S:
+                feature_mi_matrix[s, all_S] = get_mi_vector(self, self.k, all_S, s, self._are_data_binned(), n_jobs=self.n_jobs)
+            # Ensure the MI matrix is symmetric.
+            feature_mi_matrix = mico_utils.make_mat_sym(feature_mi_matrix)
+
+        #-------------------------------------------------------------------#
+        # Generate feature importance scores.                               #
+        #-------------------------------------------------------------------#
+        S, best_score, feature_importances, feature_raking = \
+            self._generate_feature_importances(best_soln=S, Q=feature_mi_matrix, num_features=num_features)
+
+        #-------------------------------------------------------------------#
         # Save results                                                      #
         #-------------------------------------------------------------------#
+        num_features_sel = self.n_features_
         self.n_features_ = len(S)
+        self.feature_importances_ = feature_importances
         self._support_mask = np.zeros(p, dtype=np.bool)
         self._support_mask[S] = True
         self.mi_ = S_mi
+
+        self._print_end_result(num_features_sel=num_features_sel, num_features=num_features, best_soln=S)
 
         return self
 
@@ -864,6 +956,12 @@ class MutualInformationForwardSelection(MutualInformationBase):
 
     def _print_curr_result(self, S, selected, MIs):
         logging.info("{0:>5}{1:>5}{2:+14.6E}".format(len(S), selected, MIs[-1]))
+
+    def _print_end_result(self, num_features_sel, num_features, best_soln):
+        logging.info("Done MIFS.")
+        logging.info(" - Total feat.   : {}".format(num_features))
+        logging.info(" - Target feat.  : {}".format(num_features_sel))
+        logging.info(" - Actual feat.  : {}".format(len(best_soln)))
 
 
 class MutualInformationBackwardSelection(MutualInformationBase):
@@ -921,16 +1019,8 @@ class MutualInformationBackwardSelection(MutualInformationBase):
     support_ : array of length X.shape[1]
         The mask array of selected features.
 
-    ranking_ : array of shape n_features
-        The feature ranking of the selected features, with the first being
-        the first feature selected with largest marginal MI with y, followed by
-        the others with decreasing MI.
-
-    mi_ : array of shape n_features
-        The JMIM of the selected features. Usually this a monotone decreasing
-        array of numbers converging to 0. One can use this to estimate the
-        number of features to select. In fact this is what n_features='auto''
-        tries to do heuristically.
+    feature_importances_ : array of shape n_features
+        The feature importance scores of the selected features.
 
     Examples
     --------
@@ -990,8 +1080,7 @@ class MutualInformationBackwardSelection(MutualInformationBase):
 
         # Attributes.
         self.n_features_ = 0
-        self.ranking_ = []
-        self.mi_ = []
+        self.feature_importances_ = []
 
     def fit(self, X, y):
         """
@@ -1026,11 +1115,11 @@ class MutualInformationBackwardSelection(MutualInformationBase):
         self._print_init_result()
 
         #-------------------------------------------------------------------#
-        # CALCULATE FULL MIs                                                #
+        # Calculate full MIs                                                #
         #-------------------------------------------------------------------#
         logging.info("Started calculating full MI matrix.")
         if self.method == 'MRMR':
-            xy_MI = np.array(get_first_mi_vector(self, self.k, self._are_data_binned()))
+            xy_MI = np.array(get_first_mi_vector(self, self.k, self._are_data_binned(), n_jobs=1))
             xy_MI = _replace_vec_nan_with_zero(xy_MI)
             #print("xy_MI", xy_MI)
 
@@ -1053,7 +1142,7 @@ class MutualInformationBackwardSelection(MutualInformationBase):
         #print(feature_mi_matrix)
 
         #-------------------------------------------------------------------#
-        # FIND SUBSEQUENT FEATURES                                          #
+        # Find subsequent features                                          #
         #-------------------------------------------------------------------#
         logging.info("Started backward selection.")
         while len(S) >= n_features:
@@ -1112,12 +1201,22 @@ class MutualInformationBackwardSelection(MutualInformationBase):
         S = sorted(S)
 
         #-------------------------------------------------------------------#
+        # Generate feature importance scores.                               #
+        #-------------------------------------------------------------------#
+        S, best_score, feature_importances, feature_raking = \
+            self._generate_feature_importances(best_soln=S, Q=feature_mi_matrix, num_features=num_features)
+
+        #-------------------------------------------------------------------#
         # Save results                                                      #
         #-------------------------------------------------------------------#
+        num_features_sel = self.n_features_
         self.n_features_ = len(S)
+        self.feature_importances_ = feature_importances
         self._support_mask = np.zeros(p, dtype=np.bool)
         self._support_mask[S] = True
-        self.mi_ = S_mi
+        #self.mi_ = S_mi
+
+        self._print_end_result(num_features_sel=num_features_sel, num_features=num_features, best_soln=S)
 
         return self
 
@@ -1130,6 +1229,12 @@ class MutualInformationBackwardSelection(MutualInformationBase):
 
     def _print_curr_result(self, S, selected, MIs):
         logging.info("{0:>5}{1:>5}{2:+14.6E}".format(len(S), selected, MIs[-1]))
+
+    def _print_end_result(self, num_features_sel, num_features, best_soln):
+        logging.info("Done MIBS.")
+        logging.info(" - Total feat.   : {}".format(num_features))
+        logging.info(" - Target feat.  : {}".format(num_features_sel))
+        logging.info(" - Actual feat.  : {}".format(len(best_soln)))
 
 
 class MutualInformationConicOptimization(MutualInformationBase):
@@ -1190,9 +1295,6 @@ class MutualInformationConicOptimization(MutualInformationBase):
 
     support_ : array of length X.shape[1]
         The mask array of selected features.
-
-    ranking_ : array of shape n_features
-        The feature ranking calculating using the feature importance scores.
 
     feature_importances_ : array of shape n_features
         The feature importance scores of the selected features.
@@ -1261,7 +1363,6 @@ class MutualInformationConicOptimization(MutualInformationBase):
         # Attributes.
         self.n_features_ = 0
         self.feature_importances_ = []
-        self.ranking_ = []
 
     def fit(self, X, y):
         """
@@ -1373,7 +1474,6 @@ class MutualInformationConicOptimization(MutualInformationBase):
 
         # Cone information.
         semidefinite_cone = list(range((num_features + 1) * (num_features + 1)))
-        #print("semidefinite_cone", semidefinite_cone)
 
         # Constraint 1.
         row1_idx = []
@@ -1383,9 +1483,6 @@ class MutualInformationConicOptimization(MutualInformationBase):
                 row1_idx += [map_ij_to_k(i, j, num_features + 1)]
                 row1_val += [1.0]
         row1_rhs = (2.0 * num_features_sel - num_features) ** 2
-        #print("row1_idx", row1_idx)
-        #print("row1_val", row1_val)
-        #print("row1_rhs", row1_rhs)
 
         # Constraint 2.
         row2_idx = []
@@ -1397,9 +1494,6 @@ class MutualInformationConicOptimization(MutualInformationBase):
             row2_idx += [map_ij_to_k(i, 0, num_features + 1)]
             row2_val += [1.0]
         row2_rhs = 2.0 * (2.0 * num_features_sel - num_features)
-        #print("row2_idx", row2_idx)
-        #print("row2_val", row2_val)
-        #print("row2_rhs", row2_rhs)
 
         # Model.
         CLN_INFINITY = ClnModel.get_infinity()
@@ -1591,59 +1685,20 @@ class MutualInformationConicOptimization(MutualInformationBase):
         #-------------------------------------------------------------------#
         # Generate feature importance scores.                               #
         #-------------------------------------------------------------------#
-        self.feature_importances_ = []
-        require_clean_run = False
-        best_soln_binary = self._convert_idx_array_to_mask_array(best_soln, num_features)
-        best_score = self._calc_xQx(Q, best_soln_binary)
-
-        for i in range(len(best_soln_binary)):
-            if best_soln_binary[i] == 1:
-                # Remove the feature and recalculate the score.
-                best_soln_binary[i] = 0
-                curr_score = self._calc_xQx(Q, best_soln_binary)
-                diff_score = best_score - curr_score
-                best_soln_binary[i] = 1
-                if diff_score < 0:
-                    logging.info("Warning: Feature {} has negative score {1}".format(i, diff_score))
-                    best_soln_binary[i] = 0
-                    require_clean_run = True
-                self.feature_importances_.append(diff_score)
-            else:
-                self.feature_importances_.append(0.0)
-
-        if require_clean_run:
-            best_soln = self._convert_mask_array_to_idx_array(best_soln_binary)
-            best_score = self._calc_xQx(Q, best_soln_binary)
-
-        # Normalize and rank.
-        self.feature_importances_ = self.feature_importances_ / sum(self.feature_importances_)
-        #print(self.feature_importances_)
-        self.ranking_ = list(map(int, rankdata(-self.feature_importances_)))
-        #print(self.ranking_)
+        best_soln, best_score, feature_importances, feature_raking = \
+            self._generate_feature_importances(best_soln, Q, num_features)
 
         #-------------------------------------------------------------------#
         # Save results                                                      #
         #-------------------------------------------------------------------#
-        logging.info("Done MICO.")
-        logging.info(" - Total feat.   : {}".format(num_features))
-        logging.info(" - Target feat.  : {}".format(num_features_sel))
-        logging.info(" - Actual feat.  : {}".format(len(best_soln)))
         self.n_features_ = len(best_soln)
+        self.feature_importances_ = feature_importances
         self._support_mask = np.zeros(num_features, dtype=np.bool)
         self._support_mask[best_soln] = True
 
+        self._print_end_result(num_features_sel, num_features, best_soln)
+
         return self
-
-    def _calc_xQx(self, Q, curr_soln):
-        score = 0
-        n = Q.shape[0]
-        for i in range(n):
-            if curr_soln[i] > 0:
-                for j in range(n):
-                    if curr_soln[j] > 0:
-                        score += Q[i, j]
-
-        return score
 
     def _print_init_result(self, num_features_sel, num_features, offdiagonal_param):
         logging.info("Started MICO.")
@@ -1653,13 +1708,11 @@ class MutualInformationConicOptimization(MutualInformationBase):
         logging.info(" - Sel. features : {}".format(num_features_sel))
         logging.info(" - Off-diag param: {}".format(offdiagonal_param))
 
-    def _convert_idx_array_to_mask_array(self, idx_array, n):
-        mask_array = np.zeros(n, dtype=int)
-        mask_array[idx_array] = 1
-        return mask_array
-
-    def _convert_mask_array_to_idx_array(self, mask_array):
-        return np.where(mask_array)
+    def _print_end_result(self, num_features_sel, num_features, best_soln):
+        logging.info("Done MICO.")
+        logging.info(" - Total feat.   : {}".format(num_features))
+        logging.info(" - Target feat.  : {}".format(num_features_sel))
+        logging.info(" - Actual feat.  : {}".format(len(best_soln)))
 
 
 def test_mi():

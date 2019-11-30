@@ -111,8 +111,9 @@ def test_mifs():
     sens, prec = check_selection(np.where(mifs.get_support())[0], i, r)
     print('Sensitivity: ' + str(sens) + '    Precision: ' + str(prec))
     #print("Selected features: {}".format(np.where(mico.get_support())[0]))
-    print(mifs.get_support())
-    print(mifs.ranking_)
+    #print(mifs.get_support())
+    #print(mifs.feature_importances_)
+    #print(mifs.ranking_)
 
     # simulate dataset with continuous y
     X, y = make_regression(n_samples=s, n_features=f, n_informative=i,
@@ -167,8 +168,9 @@ def test_mibs():
     # calculate precision and sensitivity
     sens, prec = check_selection(np.where(mibs.get_support())[0], i, r)
     print('Sensitivity: ' + str(sens) + '    Precision: ' + str(prec))
-    print("Selected features: {}".format(np.where(mibs.get_support())[0]))
-    print(mibs.ranking_)
+    #print("Selected features: {}".format(np.where(mibs.get_support())[0]))
+    #print(mibs.get_support())
+    #print(mibs.feature_importances_)
 
     # simulate dataset with continuous y
     X, y = make_regression(n_samples=s, n_features=f, n_informative=i,
@@ -196,7 +198,7 @@ def test_mico():
     scale_data = False
     k = max(1, int(f * 0.25))
     verbose = 2
-    n_features = int(f * 0.18)
+    n_features = int(f * 0.20)
     #n_features = 8#int(f / 2)
     max_rounds = 0
     n_jobs = 4
@@ -228,8 +230,7 @@ def test_mico():
     sens, prec = check_selection(np.where(mico.get_support())[0], i, r)
     print('Sensitivity: ' + str(sens) + '    Precision: ' + str(prec))
     #print("Selected features: {}".format(np.where(mico.get_support())[0]))
-    print(mico.feature_importances_)
-    print(mico.ranking_)
+    #print(mico.feature_importances_)
 
     # simulate dataset with continuous y
     X, y = make_regression(n_samples=s, n_features=f, n_informative=i,
