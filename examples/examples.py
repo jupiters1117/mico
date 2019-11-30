@@ -21,10 +21,6 @@ import logging
 import argparse
 
 
-def setup_logging(level):
-    logging.basicConfig(format='[%(asctime)s] %(message)s', datefmt='%Y-%m-%d %I:%M:%S %p', level=level)
-
-
 def check_selection(selected, i, r):
     """
     Check FN, FP, TP ratios among the selected features.
@@ -345,11 +341,6 @@ if __name__ == '__main__':
     parser.add_argument('job', type=str)
     args = parser.parse_args()
 
-    # Greeting.
-    setup_logging('INFO')
-    logging.info("Started MICO.")
-    logging.info(" - Job            : {0}".format(args.job))
-
     try:
         if args.job == "mifs":
             test_mifs()
@@ -360,17 +351,17 @@ if __name__ == '__main__':
         elif args.job == "colin":
             test_colin()
         else:
-            logging.info("<ERR>: Unknown command [{0}].".format(args.job))
-            logging.info("     : Available options are:")
-            logging.info("     :  - [mifs] MI based forward selection")
-            logging.info("     :  - [mibs] MI based backward selection")
-            logging.info("     :  - [mico] MI based features selection using coinc optimization")
+            print("<ERR>: Unknown command [{0}].".format(args.job))
+            print("     : Available options are:")
+            print("     :  - [mifs] MI based forward selection")
+            print("     :  - [mibs] MI based backward selection")
+            print("     :  - [mico] MI based features selection using coinc optimization")
 
     except Exception as e:
         # Handle general exception.
-        logging.info("<ERR>: Captured unknown error exception.")
-        logging.info("<ERR>:  - Type    : {0}".format(type(e)))
-        logging.info("<ERR>:  - Message : {0}".format(e))
+        print("<ERR>: Captured unknown error exception.")
+        print("<ERR>:  - Type    : {0}".format(type(e)))
+        print("<ERR>:  - Message : {0}".format(e))
     finally:
         # Done.
-        logging.info("Terminated MICO.")
+        pass

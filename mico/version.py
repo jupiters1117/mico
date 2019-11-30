@@ -109,14 +109,17 @@ def _import_module_with_version_check(module_name, minimum_version,
 
 
 def _check_module_dependencies(is_installing=False):
-    """Throw an exception if imbalanced-learn dependencies are not installed.
+    """
+    Throw an exception if imbalanced-learn dependencies are not installed.
+
     Parameters
     ----------
     is_installing: boolean
         if True, only error on missing packages that cannot be auto-installed.
         if False, error on any missing package.
+
     Throws
-    -------
+    ------
     ImportError
     """
 
