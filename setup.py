@@ -1,6 +1,19 @@
 #! /usr/bin/env python
 """
-    MICO: Mutual Information and Conic Optimization for feature selection.
+MICO: Mutual Information and Conic Optimization for feature selection.
+
+Github repo : https://github.com/jupiters1117/mico
+Author      : KuoLing Huang <jupiters1117@gmail.com>
+License     : BSD 3 clause
+
+
+Note
+----
+MICO is heavily inspired from MIFS by Daniel Homola:
+
+Github repo : https://github.com/danielhomola/mifs
+Author      : Daniel Homola <dani.homola@gmail.com>
+License     : BSD 3 clause
 """
 
 import sys
@@ -11,28 +24,21 @@ from setuptools import setup, find_packages
 
 
 def load_requirements():
-    requirements = [
-        "scipy>=1.3.1",
-        "numpy>=1.17.3",
-        "scikit-learn>=0.21",
-        "joblib>=0.14.0",
-        "psutil>=5.6.3",
-        "pyitlib>=0.2.2"
-    ]
+    with open('requirements.txt') as f:
+        requirements = [l.strip() for l in f.readlines() if l]
     return requirements
 
 
 def load_version():
-    """Executes mico/version.py in a globals dictionary and
-    return it.
+    """
+    Executes mico/version.py in a globals dictionary and return it.
     """
     # load all vars into globals, otherwise
     #   the later function call using global vars doesn't work.
     globals_dict = {}
-    with codecs.open(os.path.join('mico', 'version.py'),
-                     encoding='utf-8-sig') as fp:
+    with codecs.open(os.path.join('mico', 'version.py'), encoding='utf-8-sig') as fp:
         exec(fp.read(), globals_dict)
-
+    print(globals_dict)
     return globals_dict
 
 
@@ -51,19 +57,19 @@ DESCRIPTION = 'MICO: Mutual Information and Conic Optimization for feature selec
 with codecs.open('README.rst', encoding='utf-8-sig') as f:
     LONG_DESCRIPTION = f.read()
 MAINTAINER = 'KuoLing Huang'
-MAINTAINER_EMAIL = 'colinopt.org@gmail.com'
-URL = 'https://github.com/glemaitre/mico'
-LICENSE = 'new BSD'
-DOWNLOAD_URL = 'https://github.com/glemaitre/mico' # To update
+MAINTAINER_EMAIL = 'jupiters1117@gmail.com'
+URL = 'https://github.com/jupiters1117/mico'
+LICENSE = 'BSD 3 clause'
+DOWNLOAD_URL = 'https://github.com/jupiters1117/mico'
 VERSION = _VERSION_GLOBALS['__version__']
-REQUIREMENTS = load_requirements()
+INSTALL_REQUIRES = load_requirements()
 
 
 if __name__ == "__main__":
 
     if is_installing():
         module_check_fn = _VERSION_GLOBALS['_check_module_dependencies']
-        module_check_fn(is_imbalanced_dataset_installing=True)
+        module_check_fn(is_installing=True)
 
     install_requires = \
         ['%s>=%s' % (mod, meta['min_version'])
@@ -98,5 +104,5 @@ if __name__ == "__main__":
             'Programming Language :: Python :: 3.7',
         ],
         packages=find_packages(),
-        install_requires=REQUIREMENTS
+        install_requires=INSTALL_REQUIRES
     )

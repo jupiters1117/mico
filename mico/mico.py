@@ -1,8 +1,18 @@
 """
-Parallelized Mutual Information based Feature Selection module.
+MICO: Mutual Information and Conic Optimization for feature selection.
 
-Author: Daniel Homola <dani.homola@gmail.com>
-License: BSD 3 clause
+Github repo : https://github.com/jupiters1117/mico
+Author      : KuoLing Huang <jupiters1117@gmail.com>
+License     : BSD 3 clause
+
+
+Note
+----
+MICO is heavily inspired from MIFS by Daniel Homola:
+
+Github repo : https://github.com/danielhomola/mifs
+Author      : Daniel Homola <dani.homola@gmail.com>
+License     : BSD 3 clause
 """
 
 from scipy import signal
