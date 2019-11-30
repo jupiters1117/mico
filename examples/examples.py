@@ -68,121 +68,6 @@ def check_selection(selected, i, r):
         sens = np.nan
         prec = np.nan
     return sens, prec
-    
-
-def test_mi():
-    import numpy as np
-    from pyitlib import discrete_random_variable as drv
-
-    #X = np.array((1.0, 2.0, 1.0, 2.0, 4.12, 4.123, 6.123))
-    #print(drv.entropy(X))
-    X = np.array((1.0, 2.0, 1.0, 2.0, 4.123, 4.123, 10.123, 1.1))
-    #print(drv.entropy(X))
-    #print(pd.qcut(np.array(X), 4, retbins=True))
-    #print(pd.qcut(np.array(X), 4, retbins=True)[1])
-
-    if False:
-        # Test bin.
-        print("=" * 80)
-        print("Testing bin")
-        print("-" * 80)
-        num_bins = 3
-
-        # - Binned with pandas.
-        pd_bins = pd.cut(np.array(X), num_bins, retbins=True)[1]
-        labels = [i for i in range(num_bins)]
-        pd_data = np.array(pd.cut(X, bins=pd_bins , labels=labels, include_lowest=True))
-        print("Binned with PD.")
-        print(" - Bin  : {}".format(pd_bins))
-        print(" - Data : {}".format(pd_data))
-        #print(type(pd.cut(X, bins=bins, labels=labels, include_lowest=True)))
-
-        # - Binned with NP.
-        np_bin_res = np.histogram(X, bins=num_bins)
-        np_data = np_bin_res[0]
-        np_bins = np_bin_res[1]
-        print("Binned with NP.")
-        print(" - Bin  : {}".format(np_bins))
-        print(" - Data : {}".format(np_data))
-
-
-    # - Binned with SKL.
-    X = np.array([[ -3., 5., 15 ],
-                  [ 0.,  6., 14 ],
-                  [ 6.,  3., 11 ],
-                  [ 16., -3.,13 ],
-                  [ 12., -3.,10 ],
-                  [ 16.4, -2.,11.2 ],
-                  [ 26., 3., 211]
-                 ]
-    )
-    skl_data = bin_data(X, num_bins=3)
-    print("Binned with SKL.")
-    print(" - Num features : {}".format(X.shape[1]))
-    #print(" - Bin  : {}".format(pd_bins))
-    print(" - Data :\n {}".format(skl_data))
-
-    print("Scaled dense matrix with SKL.")
-    den_data = scale_data(X)
-    print(" - Num features : {}".format(den_data.shape[1]))
-    print(" - Data :\n {}".format(den_data))
-    print(" - Mean :\n {}".format(den_data.mean(axis=0)))
-    print(" - Std  :\n {}".format(den_data.std(axis=0)))
-
-    print("Scaled sparse matrix with SKL.")
-    csc_data = sparse.csc_matrix(X)
-    csr_data = csc_data.tocsr()
-    spa_data = scale_data(csr_data)
-    print(" - Num features : {}".format(spa_data.shape[1]))
-    print(" - Mean :\n {}".format(spa_data.mean(axis=0)))
-
-
-    print("=" * 80)
-
-    #h = np.histogram2d(X, Y, bins=bins)[0]
-    #print(X)
-
-    #print(np.array(df['qcut4']))
-    #print(drv.entropy(data))
-    #print(np.hstack(np.array([X, X])))
-
-
-def scale_data(X):
-    """"
-    Scale the data using SKL.
-
-    References
-    ----------
-    [1] http://www.faqs.org/faqs/ai-faq/neural-nets/part2/section-16.html
-    """
-    from sklearn.preprocessing import MinMaxScaler, StandardScaler, MaxAbsScaler
-
-    # X must be stored in a row-wise order.
-    if sparse.issparse(X):
-        scalar = MaxAbsScaler()
-    else:
-        scalar = StandardScaler()#MinMaxScaler() # StandardScaler
-
-    return scalar.fit_transform(X)
-
-
-def bin_data(X, num_bins):
-    """"
-    Bin the data using SKL.
-    """
-    # X must be stored in a row-wise order.
-    from sklearn.preprocessing import KBinsDiscretizer
-
-    if type(num_bins) is int:
-        #bin_set = [ min(num_bins, len(array))]
-        # @todo Check unique value in each feature.
-        bin_set = [ num_bins for i in range(X.shape[1]) ]
-    else:
-        bin_set = num_bins
-
-    est = KBinsDiscretizer(n_bins=bin_set, encode='ordinal', strategy='uniform').fit(X)
-
-    return est.transform(X)
 
 
 def test_mifs():
@@ -213,9 +98,9 @@ def test_mifs():
     X, y = make_classification(n_samples=s, n_features=f, n_informative=i,
                                n_redundant=r, n_clusters_per_class=c,
                                random_state=1, shuffle=False)
-    print(X)
-    print(X.shape)
-    print(sum(y) / len(y))
+    #print(X)
+    #print(X.shape)
+    #print(sum(y) / len(y))
 
     # perform feature selection
     mico = MutualInformationForwardSelection(
@@ -269,9 +154,9 @@ def test_mibs():
     X, y = make_classification(n_samples=s, n_features=f, n_informative=i,
                                n_redundant=r, n_clusters_per_class=c,
                                random_state=1, shuffle=False)
-    print(X)
-    print(X.shape)
-    print(sum(y) / len(y))
+    #print(X)
+    #print(X.shape)
+    #print(sum(y) / len(y))
 
     # perform feature selection
     mico = MutualInformationBackwardSelection(
@@ -309,7 +194,7 @@ def test_mico():
     scale_data = False
     k = max(1, int(f * 0.25))
     verbose = 2
-    n_features = int(f * 0.25)
+    n_features = int(f * 0.18)
     #n_features = 8#int(f / 2)
     max_rounds = 0
     n_jobs = 4
@@ -328,9 +213,9 @@ def test_mico():
     X, y = make_classification(n_samples=s, n_features=f, n_informative=i,
                                n_redundant=r, n_clusters_per_class=c,
                                random_state=1, shuffle=False)
-    print(X)
-    print(X.shape)
-    print(sum(y) / len(y))
+    #print(X)
+    #print(X.shape)
+    #print(sum(y) / len(y))
 
     # perform feature selection
     mico = MutualInformationConicOptimization(
