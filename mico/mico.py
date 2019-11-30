@@ -5,7 +5,6 @@ Author: Daniel Homola <dani.homola@gmail.com>
 License: BSD 3 clause
 """
 
-import numpy as np
 from scipy import signal
 from sklearn.utils import check_X_y
 from sklearn.preprocessing import StandardScaler
@@ -18,7 +17,9 @@ from . import mico_utils
 from scipy import sparse, stats
 import copy
 from abc import ABCMeta, abstractmethod
+import math
 
+DEBUG = False
 
 ###############################################################################
 # IO                                                                          #
@@ -67,8 +68,6 @@ def get_time_stamp():
 # MI.                                                                         #
 ###############################################################################
 import numpy as np
-from scipy.special import gamma, psi
-from sklearn.neighbors import NearestNeighbors
 #from sklearn.externals.joblib import Parallel, delayed
 from joblib import Parallel, delayed
 
@@ -130,14 +129,17 @@ def _get_first_mi(i, k, MI_FS, are_data_binned, use_nan_for_invalid_mi=True):
     return _clean_up_MI(MI, use_nan_for_invalid_mi)
 
 
-def get_mi_vector(MI_FS, k, F, s, are_data_binned):
+def get_mi_vector(MI_FS, k, F, s, are_data_binned, n_jobs=1):
     """
     Calculates the Mututal Information between each feature in F and s.
 
     This function is for when |S| > 1. s is the previously selected feature.
-    We exploite the fact that this step is embarrassingly parallel.
+    We exploit the fact that this step is embarrassingly parallel.
     """
-    MIs = Parallel(n_jobs=MI_FS.n_jobs)(delayed(_get_mi)(f, s, k, MI_FS, are_data_binned) for f in F)
+    if n_jobs <= 1:
+        MIs = [_get_mi(f, s, k, MI_FS, are_data_binned) for f in F]
+    else:
+        MIs = Parallel(n_jobs=MI_FS.n_jobs)(delayed(_get_mi)(f, s, k, MI_FS, are_data_binned) for f in F)
     return MIs
 
 
@@ -223,7 +225,7 @@ def get_mico_vector(MI_FS, k, F, s, offdiagonal_param, are_data_binned, Nx=None,
     Calculates the Mututal Information between each feature in F and s.
 
     This function is for when |S| > 1. s is the previously selected feature.
-    We exploite the fact that this step is embarrassingly parallel.
+    We exploit the fact that this step is embarrassingly parallel.
     """
     print("Start {}".format(s))
     if n_jobs <= 1:
@@ -490,11 +492,6 @@ class MutualInformationBase(BaseEstimator, SelectorMixin, metaclass=ABCMeta):
         if self.n_jobs <= 0:
             self.n_jobs = cpu_count()
 
-        # Attributes.
-        self.n_features_ = 0
-        self.ranking_ = []
-        self.mi_ = []
-
         # Logger.
         make_dir("./log/")
         instance = get_time_stamp()
@@ -572,13 +569,13 @@ class MutualInformationBase(BaseEstimator, SelectorMixin, metaclass=ABCMeta):
 
         # Bin the data if needed.
         if self.num_bins > 0:
-            print("Binning data.")
+            logging.info("Started binning data.")
             X = self._bin_data(X, self.num_bins)
         else:
             self.num_bins = 0
         # Scale the data if needed.
         if self.scale_data:
-            print("Scaling data.")
+            logging.info("Started scaling data.")
             X = self._scale_data(X)
 
         # sanity checks
@@ -597,12 +594,12 @@ class MutualInformationBase(BaseEstimator, SelectorMixin, metaclass=ABCMeta):
         if not isinstance(self.categorical, bool):
             raise ValueError('Categorical must be Boolean.')
         if self.categorical and np.unique(y).shape[0] > 5:
-            print ('Are you sure y is categorical? It has more than 5 levels.')
+            logging.warning('Are you sure y is categorical? It has more than 5 levels.')
         if not self.categorical and self._is_integer(y):
-            print ('Are you sure y is continuous? It seems to be discrete.')
+            logging.warning('Are you sure y is continuous? It seems to be discrete.')
         if self._is_integer(X):
-            print ('The values of X seem to be discrete. MI_FS will treat them'
-                   'as continuous.')
+            logging.warning('The values of X seem to be discrete. MI_FS will treat them as continuous.')
+
         return X, y
 
     def _add_remove(self, S, F, i):
@@ -621,18 +618,6 @@ class MutualInformationBase(BaseEstimator, SelectorMixin, metaclass=ABCMeta):
 
         S.remove(i)
         return S
-
-    def _print_results(self, S, MIs):
-        out = ''
-        if self.n_features == 'auto':
-            out += 'Auto selected feature #' + str(len(S)) + ' : ' + str(S[-1])
-        else:
-            out += ('Selected feature #' + str(len(S)) + ' / ' +
-                    str(self.n_features) + ' : ' + str(S[-1]))
-
-        if self.verbose > 1:
-            out += ', ' + self.method + ' : ' + str(MIs[-1])
-        print (out)
 
 
 class MutualInformationForwardSelection(MutualInformationBase):
@@ -757,6 +742,11 @@ class MutualInformationForwardSelection(MutualInformationBase):
             n_jobs, verbose, scale_data, num_bins,
             early_stop_steps)
 
+        # Attributes.
+        self.n_features_ = 0
+        self.ranking_ = []
+        self.mi_ = []
+
     def fit(self, X, y):
         """
         Fits the MI_FS feature selection with the chosen MI_FS method.
@@ -788,20 +778,22 @@ class MutualInformationForwardSelection(MutualInformationBase):
         feature_mi_matrix[:] = np.nan
         S_mi = []
 
+        # Populate information.
+        self._print_init_result()
+
         #-------------------------------------------------------------------#
         # FIND FIRST FEATURE                                                #
         #-------------------------------------------------------------------#
         xy_MI = np.array(get_first_mi_vector(self, self.k, self._are_data_binned()))
         xy_MI = _replace_vec_nan_with_zero(xy_MI)
-        print("xy_MI", xy_MI)
+        #print("xy_MI", xy_MI)
 
         # choose the best, add it to S, remove it from F
         S, F = self._add_remove(S, F, bn.nanargmax(xy_MI))
         S_mi.append(bn.nanmax(xy_MI))
 
-        # notify user
-        if self.verbose > 0:
-            self._print_results(S, S_mi)
+        # Populate information.
+        self._print_curr_result(S, S_mi)
 
         #-------------------------------------------------------------------#
         # FIND SUBSEQUENT FEATURES                                          #
@@ -835,9 +827,8 @@ class MutualInformationForwardSelection(MutualInformationBase):
             #    S_mi.append(bn.nanmax(bn.nanmin(fmm, axis=0)))
             S, F = self._add_remove(S, F, selected)
 
-            # notify user
-            if self.verbose > 0:
-                self._print_results(S, S_mi)
+            # Populate information.
+            self._print_curr_result(S, S_mi)
 
             # if n_features == 'auto', let's check the S_mi to stop
             if self.n_features == 'auto' and \
@@ -848,7 +839,6 @@ class MutualInformationForwardSelection(MutualInformationBase):
                 if np.abs(np.mean(MI_dd[-5:])) < 1e-3:
                     break
         S = sorted(S)
-        print("S: ", S)
 
         #-------------------------------------------------------------------#
         # SAVE RESULTS                                                      #
@@ -860,6 +850,15 @@ class MutualInformationForwardSelection(MutualInformationBase):
         self.mi_ = S_mi
 
         return self
+
+    def _print_init_result(self):
+        logging.info("Started MIFS.")
+        logging.info(" - Method        : {}".format(self.method))
+        logging.info(" - Num. features : {}".format(self.n_features))
+        logging.info("{0:>5}{1:15}".format("Iter", "    Current MI"))
+
+    def _print_curr_result(self, S, MIs):
+        logging.info("{0:>5}{1:+14.6E}".format(len(S), MIs[-1]))
 
 
 class MutualInformationBackwardSelection(MutualInformationBase):
@@ -984,6 +983,11 @@ class MutualInformationBackwardSelection(MutualInformationBase):
             n_jobs, verbose, scale_data, num_bins,
             early_stop_steps)
 
+        # Attributes.
+        self.n_features_ = 0
+        self.ranking_ = []
+        self.mi_ = []
+
     def fit(self, X, y):
         """
         Fits the MI_FS feature selection with the chosen MI_FS method.
@@ -996,7 +1000,6 @@ class MutualInformationBackwardSelection(MutualInformationBase):
         y : array-like, shape = [n_samples]
             The target values.
         """
-        print("BGN")
         self.X, y = self._init_data(X, y)
         n, p = X.shape
         self.y = y.reshape(n, 1)
@@ -1009,29 +1012,36 @@ class MutualInformationBackwardSelection(MutualInformationBase):
             n_features = int(p * 0.2)
         else:
             n_features = min(p, self.n_features)
-        print("n_features = ", n_features)
 
         feature_mi_matrix = np.zeros((p, p))
         feature_mi_matrix[:] = np.nan
         S_mi = []
+        # Populate information.
+        self._print_init_result()
 
         #-------------------------------------------------------------------#
         # CALCULATE FULL MIs                                                #
         #-------------------------------------------------------------------#
+        logging.info("Started calculating full MI matrix.")
         if self.method == 'MRMR':
             xy_MI = np.array(get_first_mi_vector(self, self.k, self._are_data_binned()))
             xy_MI = _replace_vec_nan_with_zero(xy_MI)
-            print("xy_MI", xy_MI)
+            #print("xy_MI", xy_MI)
 
-        for s in S:
-            feature_mi_matrix[s, S] = get_mi_vector(self, self.k, S, s, self._are_data_binned())
+        # Parallelize in the outer loop.
+        feature_mi_matrix = np.array(Parallel(n_jobs=self.n_jobs)(delayed(get_mi_vector)(
+            self, self.k, S, s, self._are_data_binned(), n_jobs=1) for s in S))
+        #for s in S:
+        #    feature_mi_matrix[s, S] = get_mi_vector(self, self.k, S, s, self._are_data_binned(), n_jobs=self.n_jobs)
+
         # Ensure the MI matrix is symmetric.
         feature_mi_matrix = mico_utils.make_mat_sym(feature_mi_matrix)
-        print(feature_mi_matrix)
+        #print(feature_mi_matrix)
 
         #-------------------------------------------------------------------#
         # FIND SUBSEQUENT FEATURES                                          #
         #-------------------------------------------------------------------#
+        logging.info("Started backward selection.")
         while len(S) >= n_features:
             fmm = np.zeros((len(S) - 1, len(S)))
 
@@ -1042,7 +1052,7 @@ class MutualInformationBackwardSelection(MutualInformationBase):
                 fmm[:, i] = feature_mi_matrix[S_keep, s_remove]
                 if bn.allnan(fmm[:, i]):
                     fmm[:, i] = [0 for _ in range(fmm.shape[0])]
-                    print("Warning: feature [{0}] has all 0 MI.".format(i))
+                    logging.warning("Feature [{0}] has all 0 MI.".format(i))
 
             if self.method == 'JMI':
                 values = bn.nansum(fmm, axis=0)
@@ -1066,16 +1076,15 @@ class MutualInformationBackwardSelection(MutualInformationBase):
                 #S_mi.append(bn.nanmax(values))
                 removed_feature = S[bn.nanargmin(values)]
                 S_mi.append(bn.nanmin(values))
-            print("values=", values)
-            print("removed_feature=", removed_feature)
+            #print("values=", values)
+            #print("removed_feature=", removed_feature)
 
             # Update removed_feature feature list.
             S = self._remove(S, removed_feature)
-            print(S)
+            #print(S)
 
-            # notify user
-            if self.verbose > 0:
-                self._print_results(S, S_mi)
+            # Populate information.
+            self._print_curr_result(S, S_mi)
 
             # if n_features == 'auto', let's check the S_mi to stop
             if self.n_features == 'auto' and \
@@ -1084,7 +1093,7 @@ class MutualInformationBackwardSelection(MutualInformationBase):
                 MI_dd = signal.savgol_filter(S_mi[1:], 9, 2, 1)
                 # does the mean of the last 5 converge to 0?
                 if np.abs(np.mean(MI_dd[-5:])) < 1e-3:
-                    print("Early stop.")
+                    logging.info("Early stopping criteria reached.")
                     break
         S = sorted(S)
 
@@ -1098,6 +1107,15 @@ class MutualInformationBackwardSelection(MutualInformationBase):
         self.mi_ = S_mi
 
         return self
+
+    def _print_init_result(self):
+        logging.info("Started MIBS.")
+        logging.info(" - Method        : {}".format(self.method))
+        logging.info(" - Num. features : {}".format(self.n_features))
+        logging.info("{0:>5}{1:15}".format("Iter", "    Current MI"))
+
+    def _print_curr_result(self, S, MIs):
+        logging.info("{0:>5}{1:+14.6E}".format(len(S), MIs[-1]))
 
 
 class MutualInformationConicOptimization(MutualInformationBase):
@@ -1146,6 +1164,10 @@ class MutualInformationConicOptimization(MutualInformationBase):
     num_bins : int, default=0
         Number of bins for binning the data.
 
+    max_roundings : int, default=0
+        Number of iterations allowed for the rounding solution process.
+        If max_roundings is 0, then MICO will pick the nuumber internally.
+
     Attributes
     ----------
 
@@ -1155,16 +1177,8 @@ class MutualInformationConicOptimization(MutualInformationBase):
     support_ : array of length X.shape[1]
         The mask array of selected features.
 
-    ranking_ : array of shape n_features
-        The feature ranking of the selected features, with the first being
-        the first feature selected with largest marginal MI with y, followed by
-        the others with decreasing MI.
-
-    mi_ : array of shape n_features
-        The JMIM of the selected features. Usually this a monotone decreasing
-        array of numbers converging to 0. One can use this to estimate the
-        number of features to select. In fact this is what n_features='auto''
-        tries to do heuristically.
+    feature_importances_ : array of shape n_features
+        The feature importance scores of the selected features.
 
     Examples
     --------
@@ -1218,12 +1232,18 @@ class MutualInformationConicOptimization(MutualInformationBase):
                  verbose=0,
                  scale_data=True,
                  num_bins=0,
-                 random_state=0):
+                 random_state=0,
+                 max_roundings=0):
         # Call base constructor.
         super(MutualInformationConicOptimization, self).__init__(
             method, k, n_features, categorical,
             n_jobs, verbose, scale_data, num_bins)
         self.random_state = random_state
+        self.max_roundings = max_roundings
+
+        # Attributes.
+        self.n_features_ = 0
+        self.feature_importances_ = []
 
     def fit(self, X, y):
         """
@@ -1267,13 +1287,16 @@ class MutualInformationConicOptimization(MutualInformationBase):
         else:
             num_features_sel = min(num_features, self.n_features)
         offdiagonal_param = -0.5 / (num_features_sel - 1)
-        print("=" * 80)
-        print("num_features_sel", num_features_sel)
-        print("num_features", num_features)
-        print("offdiagonal_param", offdiagonal_param)
-        print("S", S)
+
+        # Calculate the number of rounding iterations.
+        if self.max_roundings <= 0:
+            self.max_roundings = num_features_sel
+
+        # Populate info.
+        self._print_init_result(num_features_sel, num_features, offdiagonal_param)
 
         # Calculate the MI matrix.
+        logging.info("Started calculating full MI matrix.")
         if self.categorical:
             Nx = []
             classes = np.unique(y)
@@ -1297,7 +1320,6 @@ class MutualInformationConicOptimization(MutualInformationBase):
         for i in range(num_features):
             for j in range(i + 1, num_features):
                 Q[j, i] = Q[i, j]
-        #feature_mi_matrix = mico_utils.make_mat_sym(feature_mi_matrix)
 
         # Calculate Q^T e.
         QTe = np.zeros(num_features)
@@ -1313,9 +1335,6 @@ class MutualInformationConicOptimization(MutualInformationBase):
         Qu[0, 1:(num_features + 1)] = QTe
         Qu[1:(num_features + 1), 0] = QTe
 
-        print("=" * 80)
-        print(Qu)
-
         #-------------------------------------------------------------------#
         # Input optimization model.                                         #
         #                                                                   #
@@ -1323,6 +1342,7 @@ class MutualInformationConicOptimization(MutualInformationBase):
         #   A Semidefinite Programming Based Search Strategy for Feature    #
         #   Selection with Mutual Information Measure, Eq (26)              #
         #-------------------------------------------------------------------#
+        logging.info("Started creating semidefinite optimization model.")
         def map_ij_to_k(i, j, size):
             return i * size + j
 
@@ -1475,28 +1495,106 @@ class MutualInformationConicOptimization(MutualInformationBase):
         cov_mat = np.matrix(cov_mat).reshape((num_features + 1), (num_features + 1))
         #print("cov_mat", cov_mat)
 
+        # Rounding solution.
+        best_diff = math.inf
+        best_score = -math.inf
+        best_soln = []
         pdf = stats.multivariate_normal(mean_vec, cov_mat)
-        for i in range(10):
-            sampled_pt = pdf.rvs(1, random_state=i)
-            ref_pt = sampled_pt[0]
-            print("ref_pt", ref_pt)
-            if abs(ref_pt) < 0.1:
-                continue
-            if ref_pt >= 0:
-                S = [i for i, e in enumerate(sampled_pt[1:len(sampled_pt)]) if e >= 0]
-            else:
-                S = [i for i, e in enumerate(sampled_pt[1:len(sampled_pt)]) if e <= 0]
-            print("S: ", S)
+        num_roundings = 0
 
-        print("Sel features =", len(S))
+        if DEBUG:
+            print("Primal soln: {}".format(prim_soln))
+            dbg_opt_val = 0
+            for i in range(0, num_features + 1):
+                for j in range(0, num_features + 1):
+                    dbg_opt_val += prim_soln[i * (num_features + 1) + j] * Qu[i, j]
+            print("Obj: {}", dbg_opt_val)
+            for i in range(0, num_features + 1):
+                print(Qu[i, 0:(num_features + 1)])
+
+        logging.info("Started rounding process.")
+        logging.info(" - Max roundings : {}".format(self.max_roundings))
+        logging.info("{0:>5}{1:>5}{2:15}".format("Iter", "Diff", "      ObjValue"))
+        seed = self.random_state
+        while num_roundings < self.max_roundings:
+            sampled_pt = pdf.rvs(1, random_state=seed)
+            seed += 1
+            ref_pt = sampled_pt[0]
+            if abs(ref_pt) < 0.1:
+                #print("ref_pt", ref_pt)
+                continue
+
+            # Solution rounding.
+            if ref_pt >= 0:
+                curr_soln = [i for i, e in enumerate(sampled_pt[1:len(sampled_pt)]) if e >= 0]
+            else:
+                curr_soln = [i for i, e in enumerate(sampled_pt[1:len(sampled_pt)]) if e <= 0]
+
+            curr_soln_binary = np.zeros(num_features)
+            for i in curr_soln:
+                curr_soln_binary[i] = 1
+
+            msg = ""
+            if True:
+                # Calculate feature difference.
+                curr_features_sel = np.sum(curr_soln_binary)
+                curr_diff = abs(curr_features_sel - num_features_sel)
+                curr_score = self._calc_xQx(Q, curr_soln_binary)
+                # Update statistics.
+                if curr_diff < best_diff:
+                    best_diff = curr_diff
+                    best_score = curr_score
+                    best_soln = curr_soln
+                    msg += "*"
+                elif curr_diff == best_diff and best_diff == 0:
+                    # Check objective value.
+                    # Update statistics.
+                    if curr_score > best_score:
+                        best_score = curr_score
+                        best_soln = curr_soln
+                        msg += "**"
+
+            else:
+                # Calculate the score.
+                curr_score = self._calc_xQx(Q, curr_soln_binary)
+
+                # Update statistics.
+                if curr_score > best_score or best_score == -math.inf:
+                    best_score = curr_score
+                    best_soln = curr_soln
+                    msg += "*"
+
+            # Populate information.
+            num_roundings += 1
+            logging.info("{0:>5}{1:>5}{2:+14.6E} {3}".format(num_roundings, int(curr_diff), curr_score, msg))
 
         #-------------------------------------------------------------------#
         # SAVE RESULTS                                                      #
         #-------------------------------------------------------------------#
-        self.n_features_ = len(S)
+        logging.info("Done MICO.")
+        logging.info(" - Total feat.   : {}".format(num_features))
+        logging.info(" - Target feat.  : {}".format(num_features_sel))
+        logging.info(" - Actual feat.  : {}".format(len(best_soln)))
+        self.n_features_ = len(best_soln)
         self._support_mask = np.zeros(num_features, dtype=np.bool)
-        self._support_mask[S] = True
-        self.ranking_ = S
-        self.mi_ = []
+        self._support_mask[best_soln] = True
 
         return self
+
+    def _calc_xQx(self, Q, curr_soln):
+        score = 0
+        n = Q.shape[0]
+        for i in range(n):
+            if curr_soln[i] > 0:
+                for j in range(n):
+                    if curr_soln[j] > 0:
+                        score += Q[i, j]
+
+        return score
+
+    def _print_init_result(self, num_features_sel, num_features, offdiagonal_param):
+        logging.info("Started MICO.")
+        logging.info(" - Method        : {}".format(self.method))
+        logging.info(" - Tot. features : {}".format(num_features))
+        logging.info(" - Sel. features : {}".format(num_features_sel))
+        logging.info(" - Off-diag param: {}".format(offdiagonal_param))

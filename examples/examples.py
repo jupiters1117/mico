@@ -187,7 +187,7 @@ def bin_data(X, num_bins):
 
 def test_mifs():
     # variables for dataset
-    s = 5000  # Num rows
+    s = 2000  # Num rows
     f = 100 # Num cols
     i = int(.1 * f)  # Proportion of the relevant features
     r = int(.05 * f)  # Proportion of the redundant features
@@ -239,15 +239,15 @@ def test_mifs():
 
 def test_mibs():
     # variables for dataset
-    s = 200  # Num rows
+    s = 2000  # Num rows
     f = 100 # Num cols
     i = int(.1 * f)  # Proportion of the relevant features
     r = int(.05 * f)  # Proportion of the redundant features
     c = 2
 
-    method = 'JMI'
+    method = 'JMIM'
     num_bins = 0
-    scale_data = True
+    scale_data = False
     k = max(1, int(f * 0.25))
     verbose = 2
     early_stop_steps = 10
@@ -290,19 +290,20 @@ def test_mibs():
 
 def test_mico():
     # variables for dataset
-    s = 10000  # Num rows
-    f = 400 # Num cols
+    s = 2000  # Num rows
+    f = 100 # Num cols
     i = int(.1 * f)  # Proportion of the relevant features
     r = int(.05 * f)  # Proportion of the redundant features
-    c = 2# Classes
+    c = 2 # Classes
 
     method = 'JMIM'
     num_bins = 0
-    scale_data = True
+    scale_data = False
     k = max(1, int(f * 0.25))
     verbose = 2
     n_features = int(f * 0.25)
     #n_features = 8#int(f / 2)
+    max_rounds = 0
 
     print("Parameters.")
     print(" - method      : {}".format(method))
@@ -311,6 +312,7 @@ def test_mico():
     print(" - k           : {}".format(k))
     print(" - verbose     : {}".format(verbose))
     print(" - n_features  : {}".format(n_features))
+    print(" - max_rounds  : {}".format(max_rounds))
 
     # simulate dataset with discrete class labels in y
     X, y = make_classification(n_samples=s, n_features=f, n_informative=i,
@@ -322,7 +324,7 @@ def test_mico():
 
     # perform feature selection
     mico = MutualInformationConicOptimization(
-        method=method, verbose=verbose, k=k, categorical=True, num_bins=num_bins, scale_data=scale_data, n_jobs=4, n_features=n_features)
+        method=method, verbose=verbose, k=k, categorical=True, num_bins=num_bins, scale_data=scale_data, n_jobs=4, n_features=n_features, max_roundings=max_rounds)
     mico.fit(X, y)
     # calculate precision and sensitivity
     sens, prec = check_selection(np.where(mico.get_support())[0], i, r)
@@ -334,7 +336,7 @@ def test_mico():
                            random_state=0, shuffle=False)
     # perform feature selection
     mico = MutualInformationConicOptimization(
-        method=method, verbose=verbose, k=k, categorical=False, num_bins=num_bins, scale_data=scale_data, n_jobs=1, n_features=n_features)
+        method=method, verbose=verbose, k=k, categorical=False, num_bins=num_bins, scale_data=scale_data, n_jobs=1, n_features=n_features, max_roundings=max_rounds)
     mico.fit(X, y)
     # calculate precision and sensitivity
     sens, prec = check_selection(np.where(mico.get_support())[0], i, r)
