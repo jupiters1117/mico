@@ -80,7 +80,6 @@ Examples
 The following example illustrates the use of the package:
 
 ```python
-
 import pandas as pd
 from sklearn.datasets import load_breast_cancer
 
@@ -103,6 +102,22 @@ print("Feature importance scores: {}".format(mico.feature_importances_))
 X_transformed = mico.transform(X)
 ```
 
+```python
+from category_encoders import *
+import pandas as pd
+from sklearn.datasets import load_boston
+
+# prepare some data
+bunch = load_boston()
+y = bunch.target
+X = pd.DataFrame(bunch.data, columns=bunch.feature_names)
+
+# use binary encoding to encode two categorical features
+enc = BinaryEncoder(cols=['CHAS', 'RAD']).fit(X)
+
+# transform the dataset
+numeric_dataset = enc.transform(X)
+```
 
 Getting Started
 ---------------
