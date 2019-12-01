@@ -80,6 +80,7 @@ Examples
 The following example illustrates the use of the package:
 
 ```python
+
 import pandas as pd
 from sklearn.datasets import load_breast_cancer
 
@@ -112,9 +113,6 @@ The following steps will walk through how to use MICO. See Sphinx's documentatio
 
 References
 ----------
-
-The solvers implemented are introduced in [1]_. Factorization machines are introduced
-in [2]_ and polynomial networks in [3]_.
 
 .. [1] T. Naghibi, S. Hoffmann and B. Pfister, "A Semidefinite Programming Based Search Strategy for Feature Selection with Mutual Information Measure", IEEE Transactions on Pattern Analysis and Machine Intelligence, 37(8), pp. 1529--1541, 2015. [`Pre-print <http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.739.8516&rep=rep1&type=pdf>`_]
 
