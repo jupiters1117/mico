@@ -32,8 +32,8 @@ This package
 Installation
 ------------
 
-1. Download the 64bit x86 **Colin** distribution from http://www.colinopt.org/downloads.php and unpack it into a chosen directory (`<CLNHOME>`).
-   Then install **Colin-Python** packageL
+1. Download **Colin** distribution from http://www.colinopt.org/downloads.php and unpack it into a chosen directory (`<CLNHOME>`).
+   Then install **Colin** package:
 
 .. code-block:: bash
 
@@ -41,13 +41,13 @@ Installation
     pip install -r requirements.txt
     python setup.py install
 
-2. Install package dependencies:
+2. Next, install **MICO** package dependencies:
 
 .. code-block:: bash
 
     pip install -r requirements.txt
 
-3. Install **MICO** package:
+3. To install **MICO** package, use:
 
 .. code-block:: bash
 
