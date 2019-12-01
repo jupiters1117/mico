@@ -79,45 +79,29 @@ Examples
 
 The following example illustrates the use of the package:
 
-```python
-import pandas as pd
-from sklearn.datasets import load_breast_cancer
+.. code-block:: python
 
-# Prepare data.
-data = load_breast_cancer()
-y = data.target
-X = pd.DataFrame(data.data, columns=data.feature_names)
+    import pandas as pd
+    from sklearn.datasets import load_breast_cancer
 
-# Perform feature selection.
-mico = MutualInformationConicOptimization(verbose=1, categorical=True)
-mico.fit(X, y)
+    # Prepare data.
+    data = load_breast_cancer()
+    y = data.target
+    X = pd.DataFrame(data.data, columns=data.feature_names)
 
-# Populate selected features.
-print("Selected features: {}".format(mico.get_support()))
+    # Perform feature selection.
+    mico = MutualInformationConicOptimization(verbose=1, categorical=True)
+    mico.fit(X, y)
 
-# Populate feature importance scores.
-print("Feature importance scores: {}".format(mico.feature_importances_))
+    # Populate selected features.
+    print("Selected features: {}".format(mico.get_support()))
 
-# Call transform() on X.
-X_transformed = mico.transform(X)
-```
+    # Populate feature importance scores.
+    print("Feature importance scores: {}".format(mico.feature_importances_))
 
-```python
-from category_encoders import *
-import pandas as pd
-from sklearn.datasets import load_boston
+    # Call transform() on X.
+    X_transformed = mico.transform(X)
 
-# prepare some data
-bunch = load_boston()
-y = bunch.target
-X = pd.DataFrame(bunch.data, columns=bunch.feature_names)
-
-# use binary encoding to encode two categorical features
-enc = BinaryEncoder(cols=['CHAS', 'RAD']).fit(X)
-
-# transform the dataset
-numeric_dataset = enc.transform(X)
-```
 
 Getting Started
 ---------------
@@ -130,20 +114,15 @@ References
 ----------
 
 .. [1] T. Naghibi, S. Hoffmann and B. Pfister, "A Semidefinite Programming Based Search Strategy for Feature Selection with Mutual Information Measure", IEEE Transactions on Pattern Analysis and Machine Intelligence, 37(8), pp. 1529--1541, 2015. [`Pre-print <http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.739.8516&rep=rep1&type=pdf>`_]
-
 .. [2] M.X. Goemans and D.P. Williamson, "Improved approximation algorithms for maximum cut and satisfiability problems using semidefinite programming", J. ACM, 42(6), pp. 1115--1145, 1995 [`Pre-print <http://www-math.mit.edu/~goemans/PAPERS/maxcut-jacm.pdf>`_]
-
 .. [3] H.H. Yang and J. Moody, "Data Visualization and Feature Selection: New Algorithms for Nongaussian Data", NIPS 1999. [`Pre-print <https://papers.nips.cc/paper/1779-data-visualization-and-feature-selection-new-algorithms-for-nongaussian-data.pdf>`_]
-
 .. [4] M. Bennasar, Y. Hicks, abd R. Setchi, "Feature selection using Joint Mutual Information Maximisation", Expert Systems with Applications, 42(22), pp. 8520--8532, 2015 [`pre-print <https://core.ac.uk/download/pdf/82448198.pdf>`_]
-
 .. [5] H. Peng, F. Long, C. Ding, "Feature selection based on mutual information criteria of max-dependency, max-relevance, and min-redundancy", IEEE Transactions on Pattern Analysis and Machine Intelligence, 27(8), pp. 1226--1238, 2005. [`Pre-print <http://ranger.uta.edu/~chqding/papers/mRMR_PAMI.pdf>`_]
-
 .. [6] `Colin: Conic-form Linear Optimizer <www.coliopt.org>`_
 
 
 Authors
 -------
 
-- KuoLing Huang
+- KuoLing Huang, 2019-presents
 
