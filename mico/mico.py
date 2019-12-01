@@ -1,18 +1,5 @@
 """
-MICO: Mutual Information and Conic Optimization for feature selection.
-
-Github repo : https://github.com/jupiters1117/mico
-Author      : KuoLing Huang <jupiters1117@gmail.com>
-License     : BSD 3 clause
-
-
-Note
-----
-MICO is heavily inspired from MIFS by Daniel Homola:
-
-Github repo : https://github.com/danielhomola/mifs
-Author      : Daniel Homola <dani.homola@gmail.com>
-License     : BSD 3 clause
+This module contains a scikit-learn compatible implementation of mutual information based feature selection methods.
 """
 
 from scipy import signal
@@ -375,111 +362,67 @@ def _get_mico(f, s, k, MI_FS, offdiagonal_param, are_data_binned, use_nan_for_in
 
 class MutualInformationBase(BaseEstimator, SelectorMixin, metaclass=ABCMeta):
     """
-    MI_FS stands for Mutual Information based Feature Selection.
-    This class contains routines for selecting features using both
-    continuous and discrete y variables. Three selection algorithms are
-    implemented: JMI, JMIM and MRMR.
+    Base class for feature selection implementation.
 
-    This implementation tries to mimic the scikit-learn interface, so use fit,
-    transform or fit_transform, to run the feature selection.
+    This base class contains routines for selecting features implementation.
+
 
     Parameters
     ----------
 
-    method : string, default = 'JMI'
-        Which mutual information based feature selection method to use:
-        - 'JMI' : Joint Mutual Information [1]
-        - 'JMIM' : Joint Mutual Information Maximisation [2]
-        - 'MRMR' : Max-Relevance Min-Redundancy [3]
+    method : string, optional (default='JMI')
 
-    k : int, default = 5
-        Sets the number of samples to use for the kernel density estimation
-        with the kNN method. Kraskov et al. recommend a small integer between
-        3 and 10.
+        A string that specifies the mutual information measure. Possible options are:
 
-    n_features : int or string, default = 'auto'
-        If int, it sets the number of features that has to be selected from X.
-        If 'auto' this is determined automatically based on the amount of
-        mutual information the previously selected features share with y.
+        - **JMI** : Joint Mutual Information [1]_
+        - **JMIM** : Joint Mutual Information Maximisation [2]_
+        - **MRMR** : Max-Relevance Min-Redundancy [3]_
 
-    categorical : Boolean, default = True
-        If True, y is assumed to be a categorical class label. If False, y is
-        treated as a continuous. Consequently this parameter determines the
-        method of estimation of the MI between the predictors in X and y.
+    k : int, optional (default=5)
+
+        An integer to specify number of samples for the kernel density estimation using KNN. A small integer between 3 and 10 is recommended.
+
+        .. Note::
+
+        This parameter is applicable only if `num_bins` is set to 0.
+
+    n_features : int or string, optional (default='auto')
+
+        A positive integer number that specifies the number of features to be selected.
+        If 'auto' is used, then this number will be determined automatically.
+
+    categorical : boolean, optional (default=True)
+
+        If `categorical` is `True`, then the dependent variable is assumed to be a categorical class label. Otherwise, the dependent variable is assumed to be a continuous variable.
 
     n_jobs : int, optional (default=1)
-        The number of threads to open if possible.
 
-    verbose : int, default=0
-        Controls verbosity of output:
-        - 0: no output
-        - 1: displays selected features
-        - 2: displays selected features and mutual information
+        The number of threads allowed for the computations. If `n_jobs` :math:`<= 0`, then it will be determined internally.
 
-    num_bins : int, default=0
-        Number of bins for binning the data.
+    verbose : int, optional (default=0)
 
+        An integer number to specify the verbosity level. Available options are:
 
-    early_stop_steps : int, default=10
-        Number of steps for early stopping.
+        - 0: Disable output.
+        - 1: Display summary results.
+        - 2: Displays all results.
 
-    Attributes
-    ----------
+    scale_data : boolean, optional (default=True)
 
-    n_features_ : int
-        The number of selected features.
+        An boolean flag that specifies if the input data input shall be scaled first.
 
-    ranking_ : array of shape n_features
-        The feature ranking of the selected features, with the first being
-        the first feature selected with largest marginal MI with y, followed by
-        the others with decreasing MI.
+    num_bins : int, optional (default=0)
 
-    mi_ : array of shape n_features
-        The JMIM of the selected features. Usually this a monotone decreasing
-        array of numbers converging to 0. One can use this to estimate the
-        number of features to select. In fact this is what n_features='auto''
-        tries to do heuristically.
+        An integer number to specify the number of bins allowed for data binning (bucketing). If :math:`0`, then data binning will be disabled, and KNN will be used for kernal density estimation.
 
-    Examples
-    --------
-
-    import pandas as pd
-    import mifs
-
-    # load X and y
-    X = pd.read_csv('my_X_table.csv', index_col=0).values
-    y = pd.read_csv('my_y_vector.csv', index_col=0).values
-
-    # define MI_FS feature selection method
-    feat_selector = mifs.MutualInformationFeatureSelector()
-
-    # find all relevant features
-    feat_selector.fit(X, y)
-
-    # check selected features
-    feat_selector.support_
-
-    # check ranking of features
-    feat_selector.ranking_
-
-    # call transform() on X to filter it down to selected features
-    X_filtered = feat_selector.transform(X)
 
     References
     ----------
 
-    [1] H. Yang and J. Moody, "Data Visualization and Feature Selection: New
-        Algorithms for Nongaussian Data"
-        NIPS 1999
-    [2] Bennasar M., Hicks Y., Setchi R., "Feature selection using Joint Mutual
-        Information Maximisation"
-        Expert Systems with Applications, Vol. 42, Issue 22, Dec 2015
-    [3] H. Peng, Fulmi Long, C. Ding, "Feature selection based on mutual
-        information criteria of max-dependency, max-relevance,
-        and min-redundancy"
-        Pattern Analysis & Machine Intelligence 2005
+    .. [1] H Yang and J Moody, "Data Visualization and Feature Selection: New Algorithms for Nongaussian Data", NIPS 1999. [`Pre-print <https://papers.nips.cc/paper/1779-data-visualization-and-feature-selection-new-algorithms-for-nongaussian-data.pdf>`_]
+    .. [2] M Bennasar, Y Hicks, abd R Setchi, "Feature selection using Joint Mutual Information Maximisation", Expert Systems with Applications, 42(22), pp. 8520--8532, 2015 [`pre-print <https://core.ac.uk/download/pdf/82448198.pdf>`_]
+    .. [3] H Peng, F Long, and C Ding, "Feature selection based on mutual information criteria of max-dependency, max-relevance, and min-redundancy", IEEE Transactions on Pattern Analysis and Machine Intelligence, 27(8), pp. 1226--1238, 2005. [`Pre-print <http://ranger.uta.edu/~chqding/papers/mRMR_PAMI.pdf>`_]
     """
-
     def __init__(self,
                  method='JMI',
                  k=5,
@@ -488,8 +431,7 @@ class MutualInformationBase(BaseEstimator, SelectorMixin, metaclass=ABCMeta):
                  n_jobs=0,
                  verbose=0,
                  scale_data=True,
-                 num_bins=0,
-                 early_stop_steps=10):
+                 num_bins=0):
         self.method = method
         self.k = k
         self.n_features = n_features
@@ -499,7 +441,6 @@ class MutualInformationBase(BaseEstimator, SelectorMixin, metaclass=ABCMeta):
         self.scale_data = scale_data
         self.num_bins = num_bins
         self._support_mask = None
-        self.early_stop_steps = early_stop_steps
         # Check if n_jobs is negative
         if self.n_jobs <= 0:
             self.n_jobs = cpu_count()
@@ -683,113 +624,103 @@ class MutualInformationBase(BaseEstimator, SelectorMixin, metaclass=ABCMeta):
 
 class MutualInformationForwardSelection(MutualInformationBase):
     """
-    MI_FS stands for Mutual Information based Feature Selection.
-    This class contains routines for selecting features using both
-    continuous and discrete y variables. Three selection algorithms are
-    implemented: JMI, JMIM and MRMR.
+    Forward selection approach for feature selection.
 
-    This implementation tries to mimic the scikit-learn interface, so use fit,
-    transform or fit_transform, to run the feature selection.
+    This class implements a forward selection approach for feature selection with mutual information (MI) measure.
+
 
     Parameters
     ----------
 
-    method : string, default = 'JMI'
-        Which mutual information based feature selection method to use:
-        - 'JMI' : Joint Mutual Information [1]
-        - 'JMIM' : Joint Mutual Information Maximisation [2]
-        - 'MRMR' : Max-Relevance Min-Redundancy [3]
+    method : string, optional (default='JMI')
 
-    k : int, default = 5
-        Sets the number of samples to use for the kernel density estimation
-        with the kNN method. Kraskov et al. recommend a small integer between
-        3 and 10.
+        A string that specifies the mutual information measure. Possible options are:
 
-    n_features : int or string, default = 'auto'
-        If int, it sets the number of features that has to be selected from X.
-        If 'auto' this is determined automatically based on the amount of
-        mutual information the previously selected features share with y.
+        - **JMI** : Joint Mutual Information [1]_
+        - **JMIM** : Joint Mutual Information Maximisation [2]_
+        - **MRMR** : Max-Relevance Min-Redundancy [3]_
 
-    categorical : Boolean, default = True
-        If True, y is assumed to be a categorical class label. If False, y is
-        treated as a continuous. Consequently this parameter determines the
-        method of estimation of the MI between the predictors in X and y.
+    k : int, optional (default=5)
+
+        An integer to specify number of samples for the kernel density estimation using KNN. A small integer between 3 and 10 is recommended.
+
+        .. Note::
+
+        This parameter is applicable only if `num_bins` is set to 0.
+
+    n_features : int or string, optional (default='auto')
+
+        A positive integer number that specifies the number of features to be selected.
+        If 'auto' is used, then this number will be determined automatically.
+
+    categorical : boolean, optional (default=True)
+
+        If `categorical` is `True`, then the dependent variable is assumed to be a categorical class label. Otherwise, the dependent variable is assumed to be a continuous variable.
 
     n_jobs : int, optional (default=1)
-        The number of threads to open if possible.
 
-    verbose : int, default=0
-        Controls verbosity of output:
-        - 0: no output
-        - 1: displays selected features
-        - 2: displays selected features and mutual information
+        The number of threads allowed for the computations. If `n_jobs` :math:`<= 0`, then it will be determined internally.
 
-    num_bins : int, default=0
-        Number of bins for binning the data.
+    verbose : int, optional (default=0)
+
+        An integer number to specify the verbosity level. Available options are:
+
+        - 0: Disable output.
+        - 1: Display summary results.
+        - 2: Displays all results.
+
+    scale_data : boolean, optional (default=True)
+
+        An boolean flag that specifies if the input data input shall be scaled first.
+
+    num_bins : int, optional (default=0)
+
+        An integer number to specify the number of bins allowed for data binning (bucketing). If :math:`0`, then data binning will be disabled, and KNN will be used for kernal density estimation.
+
+    early_stop_steps : int, optional (default=10)
+
+         An positive integer to specify the iteration limit allowed without improvement on the MI measure.
+
 
     Attributes
     ----------
 
     n_features_ : int
+
         The number of selected features.
 
-    support_ : array of length X.shape[1]
-        The mask array of selected features.
-
     feature_importances_ : array of shape n_features
-        The feature importance scores of the selected features.
+
+         The feature importance scores of the selected features.
 
     ranking_ : array of shape n_features
-        The feature ranking of the selected features, with the first being
-        the first feature selected with largest marginal MI with y, followed by
+
+        The feature ranking of the selected features, with the first being the first feature selected with largest marginal MI with y, followed by
         the others with decreasing MI.
 
     mi_ : array of shape n_features
-        The JMIM of the selected features. Usually this a monotone decreasing
-        array of numbers converging to 0. One can use this to estimate the
-        number of features to select. In fact this is what n_features='auto''
-        tries to do heuristically.
+
+        The MI measure of the selected features. Usually this a monotone decreasing array of numbers converging to 0. One can use this to estimate the
+        number of features to select. In fact this is what n_features='auto' tries to do heuristically.
+
 
     Examples
     --------
 
-    import pandas as pd
-    import mifs
+    This implementation follows the scikit-learn API convention:
 
-    # load X and y
-    X = pd.read_csv('my_X_table.csv', index_col=0).values
-    y = pd.read_csv('my_y_vector.csv', index_col=0).values
+     - ``fit(X, y)``
+     - ``transform(X)``
+     - ``fit_transform(X, y)``
 
-    # define MI_FS feature selection method
-    feat_selector = mifs.MutualInformationFeatureSelector()
-
-    # find all relevant features
-    feat_selector.fit(X, y)
-
-    # check selected features
-    feat_selector.support_
-
-    # check ranking of features
-    feat_selector.ranking_
-
-    # call transform() on X to filter it down to selected features
-    X_filtered = feat_selector.transform(X)
 
     References
     ----------
 
-    [1] H. Yang and J. Moody, "Data Visualization and Feature Selection: New
-        Algorithms for Nongaussian Data"
-        NIPS 1999
-    [2] Bennasar M., Hicks Y., Setchi R., "Feature selection using Joint Mutual
-        Information Maximisation"
-        Expert Systems with Applications, Vol. 42, Issue 22, Dec 2015
-    [3] H. Peng, Fulmi Long, C. Ding, "Feature selection based on mutual
-        information criteria of max-dependency, max-relevance,
-        and min-redundancy"
-        Pattern Analysis & Machine Intelligence 2005
+    .. [1] H Yang and J Moody, "Data Visualization and Feature Selection: New Algorithms for Nongaussian Data", NIPS 1999. [`Pre-print <https://papers.nips.cc/paper/1779-data-visualization-and-feature-selection-new-algorithms-for-nongaussian-data.pdf>`_]
+    .. [2] M Bennasar, Y Hicks, abd R Setchi, "Feature selection using Joint Mutual Information Maximisation", Expert Systems with Applications, 42(22), pp. 8520--8532, 2015 [`pre-print <https://core.ac.uk/download/pdf/82448198.pdf>`_]
+    .. [3] H Peng, F Long, and C Ding, "Feature selection based on mutual information criteria of max-dependency, max-relevance, and min-redundancy", IEEE Transactions on Pattern Analysis and Machine Intelligence, 27(8), pp. 1226--1238, 2005. [`Pre-print <http://ranger.uta.edu/~chqding/papers/mRMR_PAMI.pdf>`_]
     """
-
     def __init__(self,
                  method='JMI',
                  k=5,
@@ -803,8 +734,8 @@ class MutualInformationForwardSelection(MutualInformationBase):
         # Call base constructor.
         super(MutualInformationForwardSelection, self).__init__(
             method, k, n_features, categorical,
-            n_jobs, verbose, scale_data, num_bins,
-            early_stop_steps)
+            n_jobs, verbose, scale_data, num_bins)
+        self.early_stop_steps = early_stop_steps
 
         # Attributes.
         self.n_features_ = 0
@@ -852,7 +783,6 @@ class MutualInformationForwardSelection(MutualInformationBase):
         #-------------------------------------------------------------------#
         xy_MI = np.array(get_first_mi_vector(self, self.k, self._are_data_binned(), n_jobs=1))
         xy_MI = _replace_vec_nan_with_zero(xy_MI)
-        #print("xy_MI", xy_MI)
 
         # choose the best, add it to S, remove it from F
         selected = bn.nanargmax(xy_MI)
@@ -890,16 +820,14 @@ class MutualInformationForwardSelection(MutualInformationBase):
                 selected = F[bn.nanargmax(MRMR)]
                 S_mi.append(bn.nanmax(MRMR))
 
-            # record the JMIM of the newly selected feature and add it to S
-            #if self.method != 'MRMR':
-            #    S_mi.append(bn.nanmax(bn.nanmin(fmm, axis=0)))
+            # record the newly selected feature and add it to S.
             S, F = self._add_remove(S, F, selected)
             self.ranking_.append(selected)
 
             # Populate information.
             self._print_curr_result(S, selected, S_mi)
 
-            # if n_features == 'auto', let's check the S_mi to stop
+            # Perform early stops.
             if self.n_features == 'auto' and \
                     (self.early_stop_steps > 0 and len(S) > self.early_stop_steps):
                 # smooth the 1st derivative of the MI values of previously sel
@@ -943,7 +871,7 @@ class MutualInformationForwardSelection(MutualInformationBase):
         #-------------------------------------------------------------------#
         # Save results                                                      #
         #-------------------------------------------------------------------#
-        num_features_sel = self.n_features_
+        num_features_sel = self.n_features
         self.n_features_ = len(S)
         self.feature_importances_ = feature_importances
         self._support_mask = np.zeros(p, dtype=np.bool)
@@ -971,101 +899,101 @@ class MutualInformationForwardSelection(MutualInformationBase):
         logging.info(" - Actual feat.  : {}".format(len(best_soln)))
 
 
-class MutualInformationBackwardSelection(MutualInformationBase):
+class MutualInformationBackwardElimination(MutualInformationBase):
     """
-    MI_FS stands for Mutual Information based Feature Selection.
-    This class contains routines for selecting features using both
-    continuous and discrete y variables. Three selection algorithms are
-    implemented: JMI, JMIM and MRMR.
+    Backward elimination approach for feature selection.
 
-    This implementation tries to mimic the scikit-learn interface, so use fit,
-    transform or fit_transform, to run the feature selection.
+    This class implements a backward selection approach for feature selection with mutual information (MI) measure.
+
 
     Parameters
     ----------
 
-    method : string, default = 'JMI'
-        Which mutual information based feature selection method to use:
-        - 'JMI' : Joint Mutual Information [1]
-        - 'JMIM' : Joint Mutual Information Maximisation [2]
-        - 'MRMR' : Max-Relevance Min-Redundancy [3]
+    method : string, optional (default='JMI')
 
-    k : int, default = 5
-        Sets the number of samples to use for the kernel density estimation
-        with the kNN method. Kraskov et al. recommend a small integer between
-        3 and 10.
+        A string that specifies the mutual information measure. Possible options are:
 
-    n_features : int or string, default = 'auto'
-        If int, it sets the number of features that has to be selected from X.
-        If 'auto' this is determined automatically based on the amount of
-        mutual information the previously selected features share with y.
+        - **JMI** : Joint Mutual Information [1]_
+        - **JMIM** : Joint Mutual Information Maximisation [2]_
+        - **MRMR** : Max-Relevance Min-Redundancy [3]_
 
-    categorical : Boolean, default = True
-        If True, y is assumed to be a categorical class label. If False, y is
-        treated as a continuous. Consequently this parameter determines the
-        method of estimation of the MI between the predictors in X and y.
+    k : int, optional (default=5)
+
+        An integer to specify number of samples for the kernel density estimation using KNN. A small integer between 3 and 10 is recommended.
+
+        .. Note::
+
+        This parameter is applicable only if `num_bins` is set to 0.
+
+    n_features : int or string, optional (default='auto')
+
+        A positive integer number that specifies the number of features to be selected.
+        If 'auto' is used, then this number will be determined automatically.
+
+    categorical : boolean, optional (default=True)
+
+        If `categorical` is `True`, then the dependent variable is assumed to be a categorical class label. Otherwise, the dependent variable is assumed to be a continuous variable.
 
     n_jobs : int, optional (default=1)
-        The number of threads to open if possible.
 
-    verbose : int, default=0
-        Controls verbosity of output:
-        - 0: no output
-        - 1: displays selected features
-        - 2: displays selected features and mutual information
+        The number of threads allowed for the computations. If `n_jobs` :math:`<= 0`, then it will be determined internally.
 
-    num_bins : int, default=0
-        Number of bins for binning the data.
+    verbose : int, optional (default=0)
+
+        An integer number to specify the verbosity level. Available options are:
+
+        - 0: Disable output.
+        - 1: Display summary results.
+        - 2: Displays all results.
+
+    scale_data : boolean, optional (default=True)
+
+        An boolean flag that specifies if the input data input shall be scaled first.
+
+    num_bins : int, optional (default=0)
+
+        An integer number to specify the number of bins allowed for data binning (bucketing). If :math:`0`, then data binning will be disabled, and KNN will be used for kernal density estimation.
+
 
     Attributes
     ----------
 
     n_features_ : int
+
         The number of selected features.
 
     feature_importances_ : array of shape n_features
-        The feature importance scores of the selected features.
+
+         The feature importance scores of the selected features.
+
+    ranking_ : array of shape n_features
+
+        The feature ranking of the selected features, with the first being the first feature selected with largest marginal MI with y, followed by
+        the others with decreasing MI.
+
+    mi_ : array of shape n_features
+
+        The MI measure of the selected features. Usually this a monotone decreasing array of numbers converging to 0. One can use this to estimate the
+        number of features to select. In fact this is what n_features='auto' tries to do heuristically.
+
 
     Examples
     --------
 
-    import pandas as pd
-    import mico
+    This implementation follows the scikit-learn API convention:
 
-    # load X and y
-    X = pd.read_csv('my_X_table.csv', index_col=0).values
-    y = pd.read_csv('my_y_vector.csv', index_col=0).values
+     - ``fit(X, y)``
+     - ``transform(X)``
+     - ``fit_transform(X, y)``
 
-    # define MI_FS feature selection method
-    feat_selector = mifs.MutualInformationFeatureSelector()
-
-    # find all relevant features
-    feat_selector.fit(X, y)
-
-    # check selected features
-    feat_selector.support_
-
-    # check ranking of features
-    feat_selector.ranking_
-
-    # call transform() on X to filter it down to selected features
-    X_filtered = feat_selector.transform(X)
 
     References
     ----------
 
-    [1] H. Yang and J. Moody, "Data Visualization and Feature Selection: New
-        Algorithms for Nongaussian Data"
-        NIPS 1999
-    [2] Bennasar M., Hicks Y., Setchi R., "Feature selection using Joint Mutual
-        Information Maximisation"
-        Expert Systems with Applications, Vol. 42, Issue 22, Dec 2015
-    [3] H. Peng, Fulmi Long, C. Ding, "Feature selection based on mutual
-        information criteria of max-dependency, max-relevance,
-        and min-redundancy"
-        Pattern Analysis & Machine Intelligence 2005
+    .. [1] H Yang and J Moody, "Data Visualization and Feature Selection: New Algorithms for Nongaussian Data", NIPS 1999. [`Pre-print <https://papers.nips.cc/paper/1779-data-visualization-and-feature-selection-new-algorithms-for-nongaussian-data.pdf>`_]
+    .. [2] M Bennasar, Y Hicks, abd R Setchi, "Feature selection using Joint Mutual Information Maximisation", Expert Systems with Applications, 42(22), pp. 8520--8532, 2015 [`pre-print <https://core.ac.uk/download/pdf/82448198.pdf>`_]
+    .. [3] H Peng, F Long, and C Ding, "Feature selection based on mutual information criteria of max-dependency, max-relevance, and min-redundancy", IEEE Transactions on Pattern Analysis and Machine Intelligence, 27(8), pp. 1226--1238, 2005. [`Pre-print <http://ranger.uta.edu/~chqding/papers/mRMR_PAMI.pdf>`_]
     """
-
     def __init__(self,
                  method='JMI',
                  k=5,
@@ -1074,13 +1002,14 @@ class MutualInformationBackwardSelection(MutualInformationBase):
                  n_jobs=0,
                  verbose=0,
                  scale_data=True,
-                 num_bins=0,
-                 early_stop_steps=10):
+                 num_bins=0):
         # Call base constructor.
-        super(MutualInformationBackwardSelection, self).__init__(
+        super(MutualInformationBackwardElimination, self).__init__(
             method, k, n_features, categorical,
-            n_jobs, verbose, scale_data, num_bins,
-            early_stop_steps)
+            n_jobs, verbose, scale_data, num_bins)
+
+        # Deprecated.
+        self.early_stop_steps = 0
 
         # Attributes.
         self.n_features_ = 0
@@ -1125,7 +1054,6 @@ class MutualInformationBackwardSelection(MutualInformationBase):
         if self.method == 'MRMR':
             xy_MI = np.array(get_first_mi_vector(self, self.k, self._are_data_binned(), n_jobs=1))
             xy_MI = _replace_vec_nan_with_zero(xy_MI)
-            #print("xy_MI", xy_MI)
 
         if True:
             # Parallelize the outer loop - faster.
@@ -1143,7 +1071,6 @@ class MutualInformationBackwardSelection(MutualInformationBase):
                 feature_mi_matrix[s, S] = get_mi_vector(self, self.k, S, s, self._are_data_binned(), n_jobs=self.n_jobs)
             # Ensure the MI matrix is symmetric.
             feature_mi_matrix = mico_utils.make_mat_sym(feature_mi_matrix)
-        #print(feature_mi_matrix)
 
         #-------------------------------------------------------------------#
         # Find subsequent features                                          #
@@ -1163,38 +1090,30 @@ class MutualInformationBackwardSelection(MutualInformationBase):
 
             if self.method == 'JMI':
                 values = bn.nansum(fmm, axis=0)
-                #removed_feature = S[bn.nanargmax(values)]
                 removed_feature = S[bn.nanargmin(values)]
-                #S_mi.append(bn.nanmax(values))
                 S_mi.append(bn.nanmin(values))
             elif self.method == 'JMIM':
                 values = bn.nanmin(fmm, axis=0)
                 if bn.allnan(values):
                     break
-                #removed_feature = S[bn.nanargmax(values)]
                 removed_feature = S[bn.nanargmin(values)]
-                #S_mi.append(bn.nanmax(values))
                 S_mi.append(bn.nanmin(values))
             elif self.method == 'MRMR':
                 if bn.allnan(bn.nanmean(fmm, axis=0)):
                     break
                 values = xy_MI[S] - bn.nanmean(fmm, axis=0)
-                #removed_feature = S[bn.nanargmax(values)]
-                #S_mi.append(bn.nanmax(values))
                 removed_feature = S[bn.nanargmin(values)]
                 S_mi.append(bn.nanmin(values))
-            #print("values=", values)
-            #print("removed_feature=", removed_feature)
 
             # Update removed_feature feature list.
             S = self._remove(S, removed_feature)
-            #print(S)
 
             # Populate information.
             self._print_curr_result(S, removed_feature, S_mi)
 
             # if n_features == 'auto', let's check the S_mi to stop
-            if self.n_features == 'auto' and \
+            # Deprecated.
+            if False and self.n_features == 'auto' and \
                     (self.early_stop_steps > 0 and p - len(S) > self.early_stop_steps):
                 # smooth the 1st derivative of the MI values of previously sel
                 MI_dd = signal.savgol_filter(S_mi[1:], 9, 2, 1)
@@ -1213,7 +1132,7 @@ class MutualInformationBackwardSelection(MutualInformationBase):
         #-------------------------------------------------------------------#
         # Save results                                                      #
         #-------------------------------------------------------------------#
-        num_features_sel = self.n_features_
+        num_features_sel = self.n_features
         self.n_features_ = len(S)
         self.feature_importances_ = feature_importances
         self._support_mask = np.zeros(p, dtype=np.bool)
@@ -1243,104 +1162,101 @@ class MutualInformationBackwardSelection(MutualInformationBase):
 
 class MutualInformationConicOptimization(MutualInformationBase):
     """
-    MI_FS stands for Mutual Information based Feature Selection.
-    This class contains routines for selecting features using both
-    continuous and discrete y variables. Three selection algorithms are
-    implemented: JMI, JMIM and MRMR.
+    Conic optimization approach for feature selection.
 
-    This implementation tries to mimic the scikit-learn interface, so use fit,
-    transform or fit_transform, to run the feature selection.
+    This class implements a conic optimization based feature selection method with mutual information (MI) measure [1]_. This idea is to formulate the selection problem as a pure-binary quadratic optimization problem, which can be heuristically solved by an efficient randomization algorithm via semidefinite programming [2]_. Optimization software **Colin** [6]_ is used for solving the underlying conic optimization problems.
+
 
     Parameters
     ----------
 
-    method : string, default = 'JMI'
-        Which mutual information based feature selection method to use:
-        - 'JMI' : Joint Mutual Information [1]
-        - 'JMIM' : Joint Mutual Information Maximisation [2]
-        - 'MRMR' : Max-Relevance Min-Redundancy [3]
+    method : string, optional (default='JMI')
 
-    k : int, default = 5
-        Sets the number of samples to use for the kernel density estimation
-        with the kNN method. Kraskov et al. recommend a small integer between
-        3 and 10.
+        A string that specifies the mutual information measure. Possible options are:
 
-    n_features : int or string, default = 'auto'
-        If int, it sets the number of features that has to be selected from X.
-        If 'auto' this is determined automatically based on the amount of
-        mutual information the previously selected features share with y.
+        - **JMI** : Joint Mutual Information [3]_
+        - **JMIM** : Joint Mutual Information Maximisation [4]_
+        - **MRMR** : Max-Relevance Min-Redundancy [5]_
 
-    categorical : Boolean, default = True
-        If True, y is assumed to be a categorical class label. If False, y is
-        treated as a continuous. Consequently this parameter determines the
-        method of estimation of the MI between the predictors in X and y.
+    k : int, optional (default=5)
+
+        An integer to specify number of samples for the kernel density estimation using KNN. A small integer between
+        3 and 10 is recommended.
+
+        .. Note::
+
+        This parameter is applicable only if `num_bins` is set to 0.
+
+    n_features : int or string, optional (default='auto')
+
+        A positive integer number that specifies the number of features to be selected.
+        If 'auto' is used, then this number will be determined automatically.
+
+    categorical : boolean, optional (default=True)
+
+        If `categorical` is `True`, then the dependent variable is assumed to be a categorical class label. Otherwise, the dependent variable is assumed to be a continuous variable.
 
     n_jobs : int, optional (default=1)
-        The number of threads to open if possible.
 
-    verbose : int, default=0
-        Controls verbosity of output:
-        - 0: no output
-        - 1: displays selected features
-        - 2: displays selected features and mutual information
+        The number of threads allowed for the computations. If `n_jobs` :math:`<= 0`, then it will be determined internally.
 
-    num_bins : int, default=0
-        Number of bins for binning the data.
+    verbose : int, optional (default=0)
 
-    max_roundings : int, default=0
-        Number of iterations allowed for the rounding solution process.
-        If max_roundings is 0, then MICO will pick the nuumber internally.
+        An integer number to specify the verbosity level. Available options are:
+
+        - 0: Disable output.
+        - 1: Display summary results.
+        - 2: Displays all results.
+
+    scale_data : boolean, optional (default=True)
+
+        An boolean flag that specifies if the input data input shall be scaled first.
+
+    num_bins : int, optional (default=0)
+
+        An integer number to specify the number of bins allowed for data binning (bucketing). If :math:`0`, then data binning will be disabled, and KNN will be used for kernal density estimation.
+
+
+    random_state : int, optional (default=0)
+
+        An integer number that specifies the random seed number.
+
+    max_roundings : int, optional (default=0)
+
+        An positive integer to specify the number of iterations allowed for the rounding solution process in [2]_. If `max_roundings` is 0, then this number will be determined internally.
+
 
     Attributes
     ----------
 
     n_features_ : int
+
         The number of selected features.
 
     feature_importances_ : array of shape n_features
+
         The feature importance scores of the selected features.
+
 
     Examples
     --------
 
-    import pandas as pd
-    import mifs
+    This implementation follows the scikit-learn API convention:
 
-    # load X and y
-    X = pd.read_csv('my_X_table.csv', index_col=0).values
-    y = pd.read_csv('my_y_vector.csv', index_col=0).values
+    - ``fit(X, y)``
+    - ``transform(X)``
+    - ``fit_transform(X, y)``
 
-    # define MI_FS feature selection method
-    feat_selector = mifs.MutualInformationFeatureSelector()
-
-    # find all relevant features
-    feat_selector.fit(X, y)
-
-    # check selected features
-    feat_selector.support_
-
-    # check ranking of features
-    feat_selector.ranking_
-
-    # call transform() on X to filter it down to selected features
-    X_filtered = feat_selector.transform(X)
 
     References
     ----------
 
-    [1] H. Yang and J. Moody, "Data Visualization and Feature Selection: New
-        Algorithms for Nongaussian Data"
-        NIPS 1999
-    [2] Bennasar M., Hicks Y., Setchi R., "Feature selection using Joint Mutual
-        Information Maximisation"
-        Expert Systems with Applications, Vol. 42, Issue 22, Dec 2015
-    [3] H. Peng, Fulmi Long, C. Ding, "Feature selection based on mutual
-        information criteria of max-dependency, max-relevance,
-        and min-redundancy"
-        Pattern Analysis & Machine Intelligence 2005
-    [4] T. Naghibi , S. Hoffmann, and B. Pfister, "A Semidefinite Programming Based Search
-        Strategy for Feature Selection with Mutual Information Measure"
-        IEEE Transactions on Pattern Analysis and Machine Intelligence, 37(8), 2015, pp 1529--1541.
+    .. [1] T Naghibi, S Hoffmann and B Pfister, "A semidefinite programming based search strategy for feature selection with mutual information measure", IEEE Transactions on Pattern Analysis and Machine Intelligence, 37(8), pp. 1529--1541, 2015. [`Pre-print <http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.739.8516&rep=rep1&type=pdf>`_]
+    .. [2] M Goemans and D Williamson, "Improved approximation algorithms for maximum cut and satisfiability problems using semidefinite programming", J. ACM, 42(6), pp. 1115--1145, 1995 [`Pre-print <http://www-math.mit.edu/~goemans/PAPERS/maxcut-jacm.pdf>`_]
+    .. [3] H Yang and J Moody, "Data Visualization and Feature Selection: New Algorithms for Nongaussian Data", NIPS 1999. [`Pre-print <https://papers.nips.cc/paper/1779-data-visualization-and-feature-selection-new-algorithms-for-nongaussian-data.pdf>`_]
+    .. [4] M Bennasar, Y Hicks, abd R Setchi, "Feature selection using Joint Mutual Information Maximisation", Expert Systems with Applications, 42(22), pp. 8520--8532, 2015 [`pre-print <https://core.ac.uk/download/pdf/82448198.pdf>`_]
+    .. [5] H Peng, F Long, and C Ding, "Feature selection based on mutual information criteria of max-dependency, max-relevance, and min-redundancy", IEEE Transactions on Pattern Analysis and Machine Intelligence, 27(8), pp. 1226--1238, 2005. [`Pre-print <http://ranger.uta.edu/~chqding/papers/mRMR_PAMI.pdf>`_]
+    .. [6] Colin: Conic-form Linear Optimizer (`www.colinopt.org <www.colinopt.org>`_).
     """
 
     def __init__(self,
@@ -1367,7 +1283,7 @@ class MutualInformationConicOptimization(MutualInformationBase):
 
     def fit(self, X, y):
         """
-        Fits the MI_FS feature selection with the chosen MI_FS method.
+        Fits the feature selection with conic optimization approach.
 
         Parameters
         ----------

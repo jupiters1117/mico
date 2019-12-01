@@ -1,35 +1,28 @@
-##########
-`MICO` API
-##########
+API
+===
 
-This is the full API documentation of the `MICO` toolbox.
+This is the full API documentation of the **MICO**.
 
-.. _mico_methods:
+Conic optimization approach for feature selection
+-------------------------------------------------
 
-MICO methods
-============
+.. autoclass:: mico.MutualInformationConicOptimization
+   :inherited-members:
+   :members:
 
-.. automodule:: mico
-    :no-members:
-    :no-inherited-members:
+Backward elimination approach for feature selection
+---------------------------------------------------
+
+.. autoclass:: mico.MutualInformationBackwardElimination
+   :inherited-members:
+   :members:
+
+Forward selection approach for feature selection
+------------------------------------------------
+
+.. autoclass:: mico.MutualInformationForwardSelection
+   :inherited-members:
+   :members:
 
 
-
-
-
-
-Classes
--------
-.. currentmodule:: mico
-
-.. autosummary::
-   :toctree: generated/
-
-   MutualInformationBase
-
-   MutualInformationForwardSelection
-
-   MutualInformationBackwardSelection
-
-   MutualInformationConicOptimization
 

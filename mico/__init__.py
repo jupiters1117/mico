@@ -14,7 +14,7 @@ Github repo : https://github.com/danielhomola/mifs
 Author      : Daniel Homola <dani.homola@gmail.com>
 License     : BSD 3 clause
 """
-from .mico import MutualInformationForwardSelection, MutualInformationBackwardSelection, MutualInformationConicOptimization
+from .mico import MutualInformationForwardSelection,  MutualInformationBackwardElimination, MutualInformationConicOptimization
 from .version import _check_module_dependencies, __version__
 
 _check_module_dependencies()
@@ -29,7 +29,7 @@ CHECK_CACHE_VERSION = True
 __all__ = \
 [
     'MutualInformationForwardSelection',
-    'MutualInformationBackwardSelection',
+    ' MutualInformationBackwardElimination',
     'MutualInformationConicOptimization',
     '__version__'
 ]

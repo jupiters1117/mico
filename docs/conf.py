@@ -39,17 +39,30 @@ except:
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
     'sphinx.ext.doctest',
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
     'numpydoc',
-    'sphinx.ext.mathjax',
+    'sphinx.ext.ifconfig',
+    'sphinx.ext.viewcode',
+    'sphinx_gallery.gen_gallery',
+    'sphinx.ext.mathjax'
+
+    #'numpydoc',
+    #'sphinx.ext.autodoc',
+    #'sphinx.ext.doctest',
+    #'sphinx.ext.intersphinx',
+    #'sphinx.ext.todo',
+    #'sphinx.ext.mathjax',
     #'sphinx.ext.pngmath',
     #'sphinx.ext.imgmath',
     #'sphinx.ext.ifconfig',
     #'sphinx.ext.viewcode',
     #'sphinx_gallery.gen_gallery',
     #'sphinx.ext.autosummary'
+
+
 ]
 
 '''
@@ -63,6 +76,16 @@ sphinx_gallery_conf = {
     # path where to save gallery generated examples
     'gallery_dirs'  : 'auto_examples'}
 '''
+
+numpydoc_show_class_members = False
+
+sphinx_gallery_conf = {
+    # path to your examples scripts
+    'examples_dirs' : '../examples',
+    # path where to save gallery generated examples
+    'gallery_dirs' : 'auto_examples',
+    'backreferences_dir': os.path.join('generated'),
+}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
