@@ -1,6 +1,10 @@
 .. -*- mode: rst -*-
 .. template: https://raw.githubusercontent.com/scikit-learn-contrib/stability-selection/master/README.md
+.. https://raw.githubusercontent.com/scikit-learn-contrib/hdbscan/master/README.rst
 
+.. image:: https://img.shields.io/pypi/l/colin-mico.svg
+    :target: https://github.com/jupiters1117/mico/master/LICENSE
+    :alt: License
 
 MICO
 ----
