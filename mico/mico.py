@@ -429,9 +429,6 @@ class MutualInformationBase(BaseEstimator, SelectorMixin, metaclass=ABCMeta):
     n_features_ : int
         The number of selected features.
 
-    support_ : array of length X.shape[1]
-        The mask array of selected features.
-
     ranking_ : array of shape n_features
         The feature ranking of the selected features, with the first being
         the first feature selected with largest marginal MI with y, followed by
@@ -508,10 +505,10 @@ class MutualInformationBase(BaseEstimator, SelectorMixin, metaclass=ABCMeta):
             self.n_jobs = cpu_count()
 
         # Logger.
-        make_dir("./log/")
-        instance = get_time_stamp()
-        filename = "./log/{}.log".format(instance)
-        #filename = None
+        #make_dir("./log/")
+        #instance = get_time_stamp()
+        #filename = "./log/{}.log".format(instance)
+        filename = None
 
         if self.verbose == 0:
             lv = logging.CRITICAL
@@ -1026,9 +1023,6 @@ class MutualInformationBackwardSelection(MutualInformationBase):
     n_features_ : int
         The number of selected features.
 
-    support_ : array of length X.shape[1]
-        The mask array of selected features.
-
     feature_importances_ : array of shape n_features
         The feature importance scores of the selected features.
 
@@ -1303,9 +1297,6 @@ class MutualInformationConicOptimization(MutualInformationBase):
     n_features_ : int
         The number of selected features.
 
-    support_ : array of length X.shape[1]
-        The mask array of selected features.
-
     feature_importances_ : array of shape n_features
         The feature importance scores of the selected features.
 
@@ -1412,7 +1403,7 @@ class MutualInformationConicOptimization(MutualInformationBase):
 
         # Calculate number of the selected features and the parameter.
         if self.n_features == 'auto':
-            num_features_sel = num_features
+            num_features_sel = min(1000, max(1, num_features * 0.2))
         else:
             num_features_sel = min(num_features, self.n_features)
         offdiagonal_param = -0.5 / (num_features_sel - 1)

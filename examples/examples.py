@@ -334,6 +334,34 @@ def test_colin():
         model.free_mdl()
 
 
+def test_iris():
+    import pandas as pd
+    from sklearn.datasets import load_breast_cancer
+
+    # Prepare data.
+    data = load_breast_cancer()
+    y = data.target
+    X = pd.DataFrame(data.data, columns=data.feature_names)
+    print(X)
+    print(y)
+    print(X.shape)
+
+    # Perform feature selection.
+    mico = MutualInformationConicOptimization(verbose=1, categorical=True)
+    mico.fit(X, y)
+
+    # Populate selected features.
+    print("Selected features: {}".format(mico.get_support()))
+
+    # Populate feature importance scores.
+    print("Feature importance scores: {}".format(mico.feature_importances_))
+
+    # Call transform() on X.
+    X_transformed = mico.transform(X)
+    print("X_transformed", X_transformed)
+
+
+
 if __name__ == '__main__':
 
     # Register arguments.
@@ -350,6 +378,8 @@ if __name__ == '__main__':
             test_mico()
         elif args.job == "colin":
             test_colin()
+        elif args.job == "iris":
+            test_iris()
         else:
             print("<ERR>: Unknown command [{0}].".format(args.job))
             print("     : Available options are:")
