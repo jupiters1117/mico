@@ -9,17 +9,9 @@
 MICO: Mutual Information and Conic Optimization for feature selection
 ---------------------------------------------------------------------
 
-
-**MICO** is a Python package that implements a conic optimization based feature selection method with mutual information (MI) measure [1]_. The idea behind the approach is to use MI to measure the features’relevance and redundancy, and to formulate the feature selection problem as a pure-binary quadratic optimization problem, which can be heuristically solved by an efficient randomization algorithm via semidefinite programming [2]_. Optimization software **Colin** [6]_ is used for solving the underlying conic optimization problems.
+**MICO** is a Python package that implements a conic optimization based feature selection method with mutual information (MI) measure [1]_. The idea behind the approach is to measure the features’relevance and redundancy using MI, and then formulate a feature selection problem as a pure-binary quadratic optimization problem, which can be heuristically solved by an efficient randomization algorithm via semidefinite programming [2]_. Optimization software **Colin** [6]_ is used for solving the underlying conic optimization problems.
 
 This package
-
-- provides scikit-learn compatible APIs.
-- implements three different MI measures:
-
-  + **JMI** : Joint Mutual Information [3]_
-  + **JMIM** : Joint Mutual Information Maximisation [4]_
-  + **MRMR** : Max-Relevance Min-Redundancy [5]_
 
 - implements three methods for feature selections:
 
@@ -27,13 +19,21 @@ This package
   + **MIFS** : Forward Selection approach
   + **MIBS** : Backward Selection approach
 
+- supports three different MI measures:
+
+  + **JMI** : Joint Mutual Information [3]_
+  + **JMIM** : Joint Mutual Information Maximisation [4]_
+  + **MRMR** : Max-Relevance Min-Redundancy [5]_
+
 - generates feature importance scores for all selected features.
+- provides scikit-learn compatible APIs.
 
 
 Installation
 ------------
 
-1. Download the 64bit x86 Colin distribution from http://www.colinopt.org/downloads.php and unpack it into a chosen directory. Install Colin-Python package
+1. Download the 64bit x86 **Colin** distribution from http://www.colinopt.org/downloads.php and unpack it into a chosen directory (`<CLNHOME>`).
+   Then install **Colin-Python** packageL
 
 .. code-block:: bash
 
@@ -41,17 +41,13 @@ Installation
     pip install -r requirements.txt
     python setup.py install
 
-.. Note::
-
-    User must replace `<CLNHOME>` with the name of your Colin installation directory.
-
-2. Install package dependencies.
+2. Install package dependencies:
 
 .. code-block:: bash
 
     pip install -r requirements.txt
 
-3. To execute the package, execute:
+3. Install **MICO** package:
 
 .. code-block:: bash
 
@@ -109,11 +105,10 @@ The following example illustrates the use of the package:
     X_transformed = mico.transform(X)
 
 
-Getting Started
----------------
+Documentation
+-------------
 
-The following steps will walk through how to use MICO. See Sphinx's documentation on
-`Getting Started <https://www.sphinx-doc.org/en/master/usage/quickstart.html>`_.
+User guide, examples, and API are available `here <https://www.sphinx-doc.org/en/master/usage/quickstart.html>`_.
 
 
 References
@@ -127,7 +122,7 @@ References
 .. [6] Colin: Conic-form Linear Optimizer (www.colinopt.org).
 
 
-Authors
+Credits
 -------
 
 - KuoLing Huang, 2019-presents
@@ -137,3 +132,11 @@ Licensing
 ---------
 
 **MICO** is 3-clause BSD licensed.
+
+
+Note
+----
+
+**MICO** is heavily inspired from `MIFS: Parallelized Mutual Information based Feature Selection module <https://github.com/danielhomola/mifs>`_ by Daniel Homola.
+
+
