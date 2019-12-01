@@ -118,7 +118,7 @@ References
 .. [3] H Yang and J Moody, "Data Visualization and Feature Selection: New Algorithms for Nongaussian Data", NIPS 1999. [`Pre-print <https://papers.nips.cc/paper/1779-data-visualization-and-feature-selection-new-algorithms-for-nongaussian-data.pdf>`_]
 .. [4] M Bennasar, Y Hicks, abd R Setchi, "Feature selection using Joint Mutual Information Maximisation", Expert Systems with Applications, 42(22), pp. 8520--8532, 2015 [`pre-print <https://core.ac.uk/download/pdf/82448198.pdf>`_]
 .. [5] H Peng, F Long, and C Ding, "Feature selection based on mutual information criteria of max-dependency, max-relevance, and min-redundancy", IEEE Transactions on Pattern Analysis and Machine Intelligence, 27(8), pp. 1226--1238, 2005. [`Pre-print <http://ranger.uta.edu/~chqding/papers/mRMR_PAMI.pdf>`_]
-.. [6] Colin: Conic-form Linear Optimizer (www.coliopt.org).
+.. [6] Colin: Conic-form Linear Optimizer (www.colinopt.org).
 
 
 Authors
@@ -126,3 +126,8 @@ Authors
 
 - KuoLing Huang, 2019-presents
 
+
+Licensing
+---------
+
+**MICO** is 3-clause BSD licensed.
