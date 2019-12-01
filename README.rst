@@ -6,11 +6,11 @@
     :target: https://github.com/jupiters1117/mico/master/LICENSE
     :alt: License
 
-MICO
-----
+MICO: Mutual Information and Conic Optimization for feature selection
+---------------------------------------------------------------------
 
 
-**MICO**, Mutual Information and Conic Optimization for feature selection, is a Python package that implements a conic optimization based feature selection method with mutual information (MI) measure [1]_. The idea behind the approach is to use MI to measure the features’relevance and redundancy, and to formulate the feature selection problem as a pure-binary quadratic optimization problem, which can be heuristically solved by an efficient randomization algorithm via semidefinite programming [2]_. Optimization software Colin [6]_ is used for solving the underlying optimization problems.
+**MICO** is a Python package that implements a conic optimization based feature selection method with mutual information (MI) measure [1]_. The idea behind the approach is to use MI to measure the features’relevance and redundancy, and to formulate the feature selection problem as a pure-binary quadratic optimization problem, which can be heuristically solved by an efficient randomization algorithm via semidefinite programming [2]_. Optimization software **Colin** [6]_ is used for solving the underlying conic optimization problems.
 
 This package
 
@@ -24,8 +24,8 @@ This package
 - implements three methods for feature selections:
 
   + **MICO** : Conic Optimization approach
-  + **MIFS** : Forward selection
-  + **MIBS** : Backward selection
+  + **MIFS** : Forward Selection approach
+  + **MIBS** : Backward Selection approach
 
 - generates feature importance scores for all selected features.
 
