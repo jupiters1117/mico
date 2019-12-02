@@ -52,14 +52,14 @@ def is_installing():
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 _VERSION_GLOBALS = load_version()
-DISTNAME = 'mico'
+DISTNAME = 'colin-mico'
 DESCRIPTION = 'MICO: Mutual Information and Conic Optimization for feature selection.'
-with codecs.open('README.rst', encoding='utf-8-sig') as f:
+with codecs.open('README.rst.short') as f:
     LONG_DESCRIPTION = f.read()
 MAINTAINER = 'KuoLing Huang'
 MAINTAINER_EMAIL = 'jupiters1117@gmail.com'
 URL = 'https://github.com/jupiters1117/mico'
-LICENSE = 'BSD 3 clause'
+LICENSE = 'BSD'
 DOWNLOAD_URL = 'https://github.com/jupiters1117/mico'
 VERSION = _VERSION_GLOBALS['__version__']
 INSTALL_REQUIRES = load_requirements()
@@ -90,7 +90,7 @@ if __name__ == "__main__":
         classifiers=[
             'Intended Audience :: Science/Research',
             'Intended Audience :: Developers',
-            'License :: The 3-Clause BSD License',
+            'License :: OSI Approved :: BSD License',
             # 'Programming Language :: C',
             'Programming Language :: Python',
             'Topic :: Software Development',

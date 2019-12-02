@@ -41,16 +41,11 @@ Installation
     pip install -r requirements.txt
     python setup.py install
 
-2. Next, install **MICO** package dependencies:
+2. To install **MICO** package, use:
 
 .. code-block:: bash
 
     pip install -r requirements.txt
-
-3. To install **MICO** package, use:
-
-.. code-block:: bash
-
     python setup.py install
 
 or
@@ -108,7 +103,7 @@ The following example illustrates the use of the package:
 Documentation
 -------------
 
-User guide, examples, and API are available `here <https://www.sphinx-doc.org/en/master/usage/quickstart.html>`_.
+User guide, examples, and API are available `here <https://jupiters1117.github.io/mico/>`_.
 
 
 References
