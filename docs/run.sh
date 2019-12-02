@@ -1,2 +1,3 @@
 python ../setup.py install 
-make html 
+#make html
+sphinx-build -b html -d _build/doctrees .  ../gh-pages/ 
