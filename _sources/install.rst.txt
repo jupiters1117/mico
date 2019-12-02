@@ -10,16 +10,12 @@ Installation
     pip install -r requirements.txt
     python setup.py install
 
-2. Next, install **MICO** package dependencies:
+
+2. To install **MICO** package, use:
 
 .. code-block:: bash
 
     pip install -r requirements.txt
-
-3. To install **MICO** package, use:
-
-.. code-block:: bash
-
     python setup.py install
 
 or
