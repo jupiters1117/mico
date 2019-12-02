@@ -20,6 +20,22 @@ EPS = np.finfo(float).eps
 DEBUG = False
 
 
+import random
+# Function to generate
+# and append them
+# start = starting range,
+# end = ending range
+# num = number of
+# elements needs to be appended
+def get_rand_list(start, end, num):
+    res = []
+
+    for j in range(num):
+        res.append(random.randint(start, end))
+
+    return res
+
+
 def make_mat_sym(mat):
     return (mat.transpose() + mat) / 2.0
 
@@ -134,9 +150,6 @@ def get_mutual_information_cc(x, y, k=5):
     -------
         get_mutual_information((X, Y))
     '''
-    #if len(variables) < 2:
-    #    raise AttributeError(
-    #            "Mutual information must involve at least 2 variables")
     all_vars = np.hstack([x, y]) # Stacked all features.
     # I(A, B) = -\sum_{a, b} P(a, b) / (P(a)P(b)) = H(A) + H(B) − H(A,B), where
     # H(A) = -\sum_{a}P(a)log_2 P(a).
@@ -145,7 +158,7 @@ def get_mutual_information_cc(x, y, k=5):
     return res
 
 
-def get_mutual_information_cd(x, y, k):
+def get_mutual_information_cd(x, y, k, Nx=None):
     """
     Calculates the mutual information between a continuous vector x and a
     discrete class vector y.
@@ -158,10 +171,7 @@ def get_mutual_information_cd(x, y, k):
     Brian C. Ross, 2014, PLOS ONE
     Mutual Information between Discrete and Continuous Data Sets
     """
-    #if y.shape[1] > 1:
-    #    y = encode_discrete_x(y)
-    #else:
-    #    y = y.flatten()
+    #print("BGN KNN")
 
     n = x.shape[0]
     classes = np.unique(y)
@@ -170,14 +180,28 @@ def get_mutual_information_cd(x, y, k):
     dist_to_k_neighbors = np.empty(n)
 
     # number of points within each point's class
-    Nx = []
-    for yi in y:
-        Nx.append(np.sum(y == yi))
+    if Nx is None:
+        Nx = []
+        if False:
+            for yi in y:
+                #print(np.sum(y == yi))
+                Nx.append(np.sum(y == yi))
+        else:
+            sum_y = {}
+            for yi in classes:
+                sum_y[yi] = np.sum(y == yi)
+            for yi in y.flatten():
+                Nx.append(sum_y[yi])
 
+    #print(">> KNN")
     # find the distance of the kth in-class point
     # See https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.NearestNeighbors.html#sklearn.neighbors.NearestNeighbors.kneighbors
     for c in classes:
         mask = np.where(y == c)[0]
+        #print(x[mask, :].shape[0])
+        if x[mask, :].shape[0] <= k:
+            continue
+            #raise ValueError("Parameter `k` is too large: current value = {0}, max possible value = {1}.".format(k, x[mask, :].shape[0]-1))
         knn.fit(x[mask, :])
         # Return the distance to the k nearest neighbors from each x of interest.
         dist = knn.kneighbors()[0]
@@ -189,11 +213,13 @@ def get_mutual_information_cd(x, y, k):
         #print(bn.nanmax(dist, axis=1), dist[:, -1])
     #print("dist_to_k_neighbors=", dist_to_k_neighbors)
 
+    #print(">> FIT-KNN")
     # find the number of points within the distance of the kth in-class point
     knn.fit(x)
     # Note: this is not supported in SKL, but it will still generate the correct result (turn DEBUG to test the implementation).
     m = knn.radius_neighbors(radius=dist_to_k_neighbors, return_distance=False)
     #print(m)
+    #print("DONE KNN")
 
     if DEBUG:
         print("Warning: Debug mode.")
@@ -218,6 +244,7 @@ def get_mutual_information_cd(x, y, k):
     MI = psi(n) - np.mean(psi(Nx)) + psi(k) - np.mean(psi(m_size))
     #print("MI = ", MI)
     #raise ValueError("STOP")
+    #print(">> MI")
 
     return MI
 
@@ -295,35 +322,42 @@ def get_interaction_information_3way(x1, x2, y, var_type, k=5):
     Optionally, the following keyword argument can be specified:
       k = number of nearest neighbors for density estimation
     Example: get_mutual_information((X, Y)), get_mutual_information((X, Y, Z), k=5)
+    Note
+    ====
+    Symmetric, but may be negative/
+
     '''
 
     # I(x1; x2; y) = I(x1, x2; y) - I(x1, y) - I(x2; y)
     #              = H(x1, x2) + H(x2, y) + H(x1, y) - H(x1) - H(x2) - H(y) - H(x1, x2, y).
     if var_type == "ccd":
         # Discrete y. All continuous X.
-        I_x1x2_y = get_mutual_information_cd(np.hstack([x1, x2]), y, k)
-        I_x1_y = get_mutual_information_cd(x1, y, k)
-        I_x2_y = get_mutual_information_cd(x2, y, k)
+        I_x1x2_y = max(0.0, get_mutual_information_cd(np.hstack([x1, x2]), y, k))
+        #print("I_x1x2_y", I_x1x2_y)
+        #print("np.hstack([x1, x2])", np.hstack([x1, x2]))
+        I_x1_y = max(0.0, get_mutual_information_cd(x1, y, k))
+        I_x2_y = max(0.0, get_mutual_information_cd(x2, y, k))
+        #print(I_x1x2_y - I_x1_y - I_x2_y)
         return I_x1x2_y - I_x1_y - I_x2_y
     elif var_type == "ccc":
         # Continuous y. All continuous X.
-        I_x1x2_y = get_mutual_information_cc(np.hstack([x1, x2]), y, k)
-        I_x1_y = get_mutual_information_cc(x1, y, k)
-        I_x2_y = get_mutual_information_cc(x2, y, k)
+        I_x1x2_y = max(0.0, get_mutual_information_cc(np.hstack([x1, x2]), y, k))
+        I_x1_y = max(0.0, get_mutual_information_cc(x1, y, k))
+        I_x2_y = max(0.0, get_mutual_information_cc(x2, y, k))
         return I_x1x2_y - I_x1_y - I_x2_y
     if var_type == "ddd":
         # Discrete y. All discrete X.
         x_encoded = encode_discrete_x(np.hstack([x1, x2]))
-        I_x1x2_y = get_mutual_information_dd(x_encoded, y)
-        I_x1_y = get_mutual_information_dd(x1, y)
-        I_x2_y = get_mutual_information_dd(x2, y)
+        I_x1x2_y = max(0.0, get_mutual_information_dd(x_encoded, y))
+        I_x1_y = max(0.0, get_mutual_information_dd(x1, y))
+        I_x2_y = max(0.0, get_mutual_information_dd(x2, y))
         return I_x1x2_y - I_x1_y - I_x2_y
     elif var_type == "ddc":
         # Continuous y. All discrete X.
         x_encoded = encode_discrete_x(np.hstack([x1, x2]))
-        I_x1x2_y = get_mutual_information_cd(y, x_encoded, k)
-        I_x1_y = get_mutual_information_cd(y, x1, k)
-        I_x2_y = get_mutual_information_cd(y, x2, k)
+        I_x1x2_y = max(0.0, get_mutual_information_cd(y, x_encoded, k))
+        I_x1_y = max(0.0, get_mutual_information_cd(y, x1, k))
+        I_x2_y = max(0.0, get_mutual_information_cd(y, x2, k))
         return I_x1x2_y - I_x1_y - I_x2_y
     else:
         raise ValueError("Unknown supported var_type {0} in get_interaction_information_3way".format(var_type))

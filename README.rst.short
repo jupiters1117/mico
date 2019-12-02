@@ -1,0 +1,111 @@
+.. -*- mode: rst -*-
+.. template: https://raw.githubusercontent.com/scikit-learn-contrib/stability-selection/master/README.md
+.. https://raw.githubusercontent.com/scikit-learn-contrib/hdbscan/master/README.rst
+
+
+MICO: Mutual Information and Conic Optimization for feature selection
+---------------------------------------------------------------------
+
+**MICO** is a Python package that implements a conic optimization based feature selection method with mutual information (MI) measure. The idea behind the approach is to measure the features’relevance and redundancy using MI, and then formulate a feature selection problem as a pure-binary quadratic optimization problem, which can be heuristically solved by an efficient randomization algorithm via semidefinite programming. Optimization software **Colin** is used for solving the underlying conic optimization problems.
+
+This package
+
+- implements three methods for feature selections:
+
+  + **MICO** : Conic Optimization approach
+  + **MIFS** : Forward Selection approach
+  + **MIBS** : Backward Selection approach
+
+- supports three different MI measures:
+
+  + **JMI** : Joint Mutual Information
+  + **JMIM** : Joint Mutual Information Maximisation
+  + **MRMR** : Max-Relevance Min-Redundancy
+
+- generates feature importance scores for all selected features.
+- provides scikit-learn compatible APIs.
+
+
+Installation
+------------
+
+1. Download **Colin** distribution from http://www.colinopt.org/downloads.php and unpack it into a chosen directory (`<CLNHOME>`).
+   Then install **Colin** package:
+
+.. code-block:: bash
+
+    cd <CLNHOME>/python
+    pip install -r requirements.txt
+    python setup.py install
+
+
+2. To install **MICO** package, use:
+
+.. code-block:: bash
+
+    pip install -r requirements.txt
+    python setup.py install
+
+or
+
+.. code-block:: bash
+
+    python setup.py install
+
+or
+
+.. code-block:: bash
+
+    pip install colin-mico
+
+To install the development version, you may use:
+
+.. code-block:: bash
+
+    pip install --upgrade git+https://github.com/jupiters1117/mico
+
+
+Usage
+-----
+
+This package provides scikit-learn compatible APIs:
+
+* ``fit(X, y)``
+* ``transform(X)``
+* ``fit_transform(X, y)``
+
+
+Examples
+--------
+
+The following example illustrates the use of the package:
+
+.. code-block:: python
+
+    import pandas as pd
+    from sklearn.datasets import load_breast_cancer
+
+    # Prepare data.
+    data = load_breast_cancer()
+    y = data.target
+    X = pd.DataFrame(data.data, columns=data.feature_names)
+
+    # Perform feature selection.
+    mico = MutualInformationConicOptimization(verbose=1, categorical=True)
+    mico.fit(X, y)
+
+    # Populate selected features.
+    print("Selected features: {}".format(mico.get_support()))
+
+    # Populate feature importance scores.
+    print("Feature importance scores: {}".format(mico.feature_importances_))
+
+    # Call transform() on X.
+    X_transformed = mico.transform(X)
+
+
+Documentation
+-------------
+
+User guide, examples, and API are available `here <https://jupiters1117.github.io/mico/>`_.
+
