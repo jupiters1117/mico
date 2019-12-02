@@ -15,14 +15,15 @@ Installation
 
 .. code-block:: bash
 
-    pip install -r requirements.txt
-    python setup.py install
+    pip install colin-mico
 
 or
 
 .. code-block:: bash
 
-    pip install colin-mico
+    pip install -r requirements.txt
+    python setup.py install
+
 
 To install the development version, you may use:
 
