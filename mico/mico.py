@@ -616,6 +616,8 @@ class MutualInformationBase(BaseEstimator, SelectorMixin, metaclass=ABCMeta):
             best_score = self._calc_xQx(Q, best_soln_binary)
 
         # Normalize and rank.
+        if sum(feature_importances) <= 0:
+            raise ValueError("Failed: all features have zero importance score. Try using a smaller value for parameter k.")
         feature_importances = feature_importances / sum(feature_importances)
         feature_raking = list(map(int, rankdata(-feature_importances)))
 
@@ -783,6 +785,8 @@ class MutualInformationForwardSelection(MutualInformationBase):
         #-------------------------------------------------------------------#
         xy_MI = np.array(get_first_mi_vector(self, self.k, self._are_data_binned(), n_jobs=1))
         xy_MI = _replace_vec_nan_with_zero(xy_MI)
+        if sum(xy_MI) <= 0:
+            logging.warning("Warning: The first MI are all zeros. Try using a different value of k.")
 
         # choose the best, add it to S, remove it from F
         selected = bn.nanargmax(xy_MI)
@@ -871,7 +875,7 @@ class MutualInformationForwardSelection(MutualInformationBase):
         #-------------------------------------------------------------------#
         # Save results                                                      #
         #-------------------------------------------------------------------#
-        num_features_sel = self.n_features
+        num_features_sel = n_features
         self.n_features_ = len(S)
         self.feature_importances_ = feature_importances
         self._support_mask = np.zeros(p, dtype=np.bool)
@@ -1076,7 +1080,7 @@ class MutualInformationBackwardElimination(MutualInformationBase):
         # Find subsequent features                                          #
         #-------------------------------------------------------------------#
         logging.info("Started backward selection.")
-        while len(S) >= n_features:
+        while len(S) >= n_features + 1:
             fmm = np.zeros((len(S) - 1, len(S)))
 
             # make decision based on the chosen FS algorithm
@@ -1132,7 +1136,7 @@ class MutualInformationBackwardElimination(MutualInformationBase):
         #-------------------------------------------------------------------#
         # Save results                                                      #
         #-------------------------------------------------------------------#
-        num_features_sel = self.n_features
+        num_features_sel = n_features
         self.n_features_ = len(S)
         self.feature_importances_ = feature_importances
         self._support_mask = np.zeros(p, dtype=np.bool)
@@ -1457,6 +1461,10 @@ class MutualInformationConicOptimization(MutualInformationBase):
             # Step 3. Solve the problem and populate the result.
             # Solve the problem.
             model.solve_prob()
+            if not model.has_solution():
+                logging.warning("Resolving the problem again.")
+                model.set_ipa("Ips/Solver/Type", 3)
+                model.solve_prob()
 
         except ClnError as e:
             logging.error("Received Colin exception.")
