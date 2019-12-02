@@ -3,7 +3,7 @@
 .. https://raw.githubusercontent.com/scikit-learn-contrib/hdbscan/master/README.rst
 
 .. image:: https://img.shields.io/pypi/l/colin-mico.svg
-    :target: https://github.com/jupiters1117/mico/master/LICENSE
+    :target: https://github.com/jupiters1117/mico/master/LICENSE.txt
     :alt: License
 
 MICO: Mutual Information and Conic Optimization for feature selection
