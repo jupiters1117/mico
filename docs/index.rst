@@ -12,15 +12,15 @@ Welcome to MICO's documentation!
 MICO: Mutual Information and Conic Optimization for feature selection
 ---------------------------------------------------------------------
 
-**MICO** is a Python package that implements a conic optimization based feature selection method with mutual information (MI) measure [1]_. The idea behind the approach is to measure the features’relevance and redundancy using MI, and then formulate a feature selection problem as a pure-binary quadratic optimization problem, which can be heuristically solved by an efficient randomization algorithm via semidefinite programming [2]_. Optimization software **Colin** [6]_ is used for solving the underlying conic optimization problems.
+**MICO** is a Python package that implements a conic optimization based feature selection method with mutual information (MI) measure [1]_. The idea behind the approach is to measure the features’relevance and redundancy using MI, and formulate a feature selection problem as a pure-binary quadratic optimization problem, which can be heuristically solved by an efficient randomization algorithm via semidefinite programming [2]_. Optimization software **Colin** [6]_ is used for solving the underlying conic optimization problems.
 
 This package
 
 - implements three methods for feature selections:
 
-  + **MICO** : Conic Optimization approach
-  + **MIFS** : Forward Selection approach
-  + **MIBS** : Backward Selection approach
+  + **MICO** : :ref:`Conic optimization approach for feature selection` (main approach)
+  + **MIFS** : :ref:`Backward elimination approach for feature selection`
+  + **MIBS** : :ref:`Forward selection approach for feature selection` (less expensive)
 
 - supports three different MI measures:
 
@@ -31,8 +31,8 @@ This package
 - generates feature importance scores for all selected features.
 - provides scikit-learn compatible APIs.
 
-Outline
--------
+Documentation Outline
+---------------------
 
 .. toctree::
    :maxdepth: 2
@@ -52,7 +52,7 @@ References
 .. [3] H Yang and J Moody, "Data Visualization and Feature Selection: New Algorithms for Nongaussian Data", NIPS 1999. [`Pre-print <https://papers.nips.cc/paper/1779-data-visualization-and-feature-selection-new-algorithms-for-nongaussian-data.pdf>`_]
 .. [4] M Bennasar, Y Hicks, abd R Setchi, "Feature selection using Joint Mutual Information Maximisation", Expert Systems with Applications, 42(22), pp. 8520--8532, 2015 [`pre-print <https://core.ac.uk/download/pdf/82448198.pdf>`_]
 .. [5] H Peng, F Long, and C Ding, "Feature selection based on mutual information criteria of max-dependency, max-relevance, and min-redundancy", IEEE Transactions on Pattern Analysis and Machine Intelligence, 27(8), pp. 1226--1238, 2005. [`Pre-print <http://ranger.uta.edu/~chqding/papers/mRMR_PAMI.pdf>`_]
-.. [6] Colin: Conic-form Linear Optimizer (www.colinopt.org).
+.. [6] Colin: Conic-form Linear Optimizer (`www.colinopt.org <www.colinopt.org>`_).
 
 
 Indices and tables
