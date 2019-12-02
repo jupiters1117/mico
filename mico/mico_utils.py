@@ -20,6 +20,22 @@ EPS = np.finfo(float).eps
 DEBUG = False
 
 
+import random
+# Function to generate
+# and append them
+# start = starting range,
+# end = ending range
+# num = number of
+# elements needs to be appended
+def get_rand_list(start, end, num):
+    res = []
+
+    for j in range(num):
+        res.append(random.randint(start, end))
+
+    return res
+
+
 def make_mat_sym(mat):
     return (mat.transpose() + mat) / 2.0
 
@@ -182,6 +198,10 @@ def get_mutual_information_cd(x, y, k, Nx=None):
     # See https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.NearestNeighbors.html#sklearn.neighbors.NearestNeighbors.kneighbors
     for c in classes:
         mask = np.where(y == c)[0]
+        #print(x[mask, :].shape[0])
+        if x[mask, :].shape[0] <= k:
+            continue
+            #raise ValueError("Parameter `k` is too large: current value = {0}, max possible value = {1}.".format(k, x[mask, :].shape[0]-1))
         knn.fit(x[mask, :])
         # Return the distance to the k nearest neighbors from each x of interest.
         dist = knn.kneighbors()[0]

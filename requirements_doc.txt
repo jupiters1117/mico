@@ -1,0 +1,8 @@
+Sphinx==1.8.5
+sphinx_bootstrap_theme
+sphinx_rtd_theme
+sphinxcontrib-bibtex==0.4.2
+#breathe
+numpydoc
+sphinx-gallery
+twine

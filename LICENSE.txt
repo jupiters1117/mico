@@ -36,5 +36,5 @@ MICO is heavily inspired from the following open source package:
 MIFS: Parallelized Mutual Information based Feature Selection module.
 
 - Github repo : https://github.com/danielhomola/mifs
-- License     : https://github.com/danielhomola/mifs/blob/master/LICENSE
+- License     : The 3-Clause BSD License
 - Author      : Daniel Homola

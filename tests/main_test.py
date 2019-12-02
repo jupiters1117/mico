@@ -1,48 +1,24 @@
 """
-Example showing the use of the mico module.
+MICO: Mutual Information and Conic Optimization for feature selection.
+
+Github repo : https://github.com/jupiters1117/mico
+Author      : KuoLing Huang <jupiters1117@gmail.com>
+License     : BSD 3 clause
+
+
+Note
+----
+MICO is heavily inspired from MIFS by Daniel Homola:
+
+Github repo : https://github.com/danielhomola/mifs
+Author      : Daniel Homola <dani.homola@gmail.com>
+License     : BSD 3 clause
 """
-from mico import MutualInformationForwardSelection, MutualInformationBackwardSelection, MutualInformationConicOptimization
+from mico import MutualInformationForwardSelection,  MutualInformationBackwardElimination, MutualInformationConicOptimization
 from sklearn.datasets import make_classification, make_regression
 import numpy as np 
-import pyitlib
-#from mico import get_entropy
-#from ..mico.mico_utils import get_entropy
-#import mico.mi
-#import sys
-import math
-#sys.path.append("..")
-from scipy.special import gamma, psi
-from sklearn.neighbors import NearestNeighbors
-import pandas as pd
-import copy
-from scipy import sparse
-
 import logging
 import argparse
-
-# Python code to generate
-# random numbers and
-# append them to a list
-import random
-
-
-def setup_logging(level):
-    logging.basicConfig(format='[%(asctime)s] %(message)s', datefmt='%Y-%m-%d %I:%M:%S %p', level=level)
-
-
-# Function to generate
-# and append them
-# start = starting range,
-# end = ending range
-# num = number of
-# elements needs to be appended
-def get_rand_list(start, end, num):
-    res = []
-
-    for j in range(num):
-        res.append(random.randint(start, end))
-
-    return res
 
 
 def check_selection(selected, i, r):
@@ -115,6 +91,7 @@ def test_mifs():
     #print(mifs.feature_importances_)
     #print(mifs.ranking_)
 
+
     # simulate dataset with continuous y
     X, y = make_regression(n_samples=s, n_features=f, n_informative=i,
                            random_state=0, shuffle=False)
@@ -128,7 +105,7 @@ def test_mifs():
     print('Sensitivity: ' + str(sens) + '    Precision: ' + str(prec))
 
 
-def test_mibs():
+def test_mibe():
     # variables for dataset
     s = 200  # Num rows
     f = 100 # Num cols
@@ -161,22 +138,22 @@ def test_mibs():
     #print(sum(y) / len(y))
 
     # perform feature selection
-    mibs = MutualInformationBackwardSelection(
+    mibe =  MutualInformationBackwardElimination(
         method=method, verbose=verbose, k=k, categorical=True, num_bins=num_bins, scale_data=scale_data,
         n_jobs=n_jobs, early_stop_steps=early_stop_steps)
-    mibs.fit(X, y)
+    mibe.fit(X, y)
     # calculate precision and sensitivity
-    sens, prec = check_selection(np.where(mibs.get_support())[0], i, r)
+    sens, prec = check_selection(np.where(mibe.get_support())[0], i, r)
     print('Sensitivity: ' + str(sens) + '    Precision: ' + str(prec))
-    #print("Selected features: {}".format(np.where(mibs.get_support())[0]))
-    #print(mibs.get_support())
-    #print(mibs.feature_importances_)
+    #print("Selected features: {}".format(np.where(mibe.get_support())[0]))
+    #print(mibe.get_support())
+    #print(mibe.feature_importances_)
 
     # simulate dataset with continuous y
     X, y = make_regression(n_samples=s, n_features=f, n_informative=i,
                            random_state=0, shuffle=False)
     # perform feature selection
-    mico = MutualInformationBackwardSelection(
+    mico =  MutualInformationBackwardElimination(
         method=method, verbose=verbose, k=k, categorical=False, num_bins=num_bins, scale_data=scale_data,
         n_jobs=n_jobs, early_stop_steps=early_stop_steps)
     mico.fit(X, y)
@@ -358,6 +335,34 @@ def test_colin():
         model.free_mdl()
 
 
+def test_iris():
+    import pandas as pd
+    from sklearn.datasets import load_breast_cancer
+
+    # Prepare data.
+    data = load_breast_cancer()
+    y = data.target
+    X = pd.DataFrame(data.data, columns=data.feature_names)
+    print(X)
+    print(y)
+    print(X.shape)
+
+    # Perform feature selection.
+    mico = MutualInformationConicOptimization(verbose=2, categorical=True, n_jobs=1)
+    mico.fit(X, y)
+
+    # Populate selected features.
+    print("Selected features: {}".format(mico.get_support()))
+
+    # Populate feature importance scores.
+    print("Feature importance scores: {}".format(mico.feature_importances_))
+
+    # Call transform() on X.
+    X_transformed = mico.transform(X)
+    print("X_transformed", X_transformed)
+
+    print(mico.get_params())
+
 if __name__ == '__main__':
 
     # Register arguments.
@@ -365,32 +370,29 @@ if __name__ == '__main__':
     parser.add_argument('job', type=str)
     args = parser.parse_args()
 
-    # Greeting.
-    setup_logging('INFO')
-    logging.info("Started MICO.")
-    logging.info(" - Job            : {0}".format(args.job))
-
     try:
         if args.job == "mifs":
             test_mifs()
-        elif args.job == "mibs":
-            test_mibs()
+        elif args.job == "mibe":
+            test_mibe()
         elif args.job == "mico":
             test_mico()
         elif args.job == "colin":
             test_colin()
+        elif args.job == "iris":
+            test_iris()
         else:
-            logging.info("<ERR>: Unknown command [{0}].".format(args.job))
-            logging.info("     : Available options are:")
-            logging.info("     :  - [mifs] MI based forward selection")
-            logging.info("     :  - [mibs] MI based backward selection")
-            logging.info("     :  - [mico] MI based features selection using coinc optimization")
+            print("<ERR>: Unknown command [{0}].".format(args.job))
+            print("     : Available options are:")
+            print("     :  - [mifs] MI based forward selection")
+            print("     :  - [mibe] MI based backward selection")
+            print("     :  - [mico] MI based features selection using coinc optimization")
 
     except Exception as e:
         # Handle general exception.
-        logging.info("<ERR>: Captured unknown error exception.")
-        logging.info("<ERR>:  - Type    : {0}".format(type(e)))
-        logging.info("<ERR>:  - Message : {0}".format(e))
+        print("<ERR>: Captured unknown error exception.")
+        print("<ERR>:  - Type    : {0}".format(type(e)))
+        print("<ERR>:  - Message : {0}".format(e))
     finally:
         # Done.
-        logging.info("Terminated MICO.")
+        pass
