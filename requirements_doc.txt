@@ -1,7 +1,0 @@
-Sphinx==1.8.1
-sphinx_bootstrap_theme
-sphinx_rtd_theme
-sphinxcontrib-bibtex
-breathe
-numpydoc
-sphinx-gallery

@@ -1,0 +1,295 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Welcome to MICO’s documentation! &mdash; MICO 0.1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/gallery.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation" href="install.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="#" class="icon icon-home"> MICO
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="auto_examples/index.html">General examples</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">MICO</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="#">Docs</a> &raquo;</li>
+        
+      <li>Welcome to MICO’s documentation!</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="welcome-to-mico-s-documentation">
+<h1>Welcome to MICO’s documentation!<a class="headerlink" href="#welcome-to-mico-s-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="mico-mutual-information-and-conic-optimization-for-feature-selection">
+<h2>MICO: Mutual Information and Conic Optimization for feature selection<a class="headerlink" href="#mico-mutual-information-and-conic-optimization-for-feature-selection" title="Permalink to this headline">¶</a></h2>
+<p><strong>MICO</strong> is a Python package that implements a conic optimization based feature selection method with mutual information (MI) measure <a class="footnote-reference" href="#id7" id="id1">[1]</a>. The idea behind the approach is to measure the features’relevance and redundancy using MI, and formulate a feature selection problem as a pure-binary quadratic optimization problem, which can be heuristically solved by an efficient randomization algorithm via semidefinite programming <a class="footnote-reference" href="#id8" id="id2">[2]</a>. Optimization software <strong>Colin</strong> <a class="footnote-reference" href="#id16" id="id3">[6]</a> is used for solving the underlying conic optimization problems.</p>
+<p>This package</p>
+<ul class="simple">
+<li>implements three methods for feature selections:<ul>
+<li><strong>MICO</strong> : <a class="reference internal" href="api.html#conic-optimization-approach-for-feature-selection"><span class="std std-ref">Conic optimization approach for feature selection</span></a> (main approach)</li>
+<li><strong>MIFS</strong> : <a class="reference internal" href="api.html#backward-elimination-approach-for-feature-selection"><span class="std std-ref">Backward elimination approach for feature selection</span></a></li>
+<li><strong>MIBS</strong> : <a class="reference internal" href="api.html#forward-selection-approach-for-feature-selection"><span class="std std-ref">Forward selection approach for feature selection</span></a> (less expensive)</li>
+</ul>
+</li>
+<li>supports three different MI measures:<ul>
+<li><strong>JMI</strong> : Joint Mutual Information <a class="footnote-reference" href="#id10" id="id4">[3]</a></li>
+<li><strong>JMIM</strong> : Joint Mutual Information Maximisation <a class="footnote-reference" href="#id12" id="id5">[4]</a></li>
+<li><strong>MRMR</strong> : Max-Relevance Min-Redundancy <a class="footnote-reference" href="#id14" id="id6">[5]</a></li>
+</ul>
+</li>
+<li>generates feature importance scores for all selected features.</li>
+<li>provides scikit-learn compatible APIs.</li>
+</ul>
+</div>
+<div class="section" id="documentation-outline">
+<h2>Documentation Outline<a class="headerlink" href="#documentation-outline" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="install.html#usage">Usage</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api.html#conic-optimization-approach-for-feature-selection">Conic optimization approach for feature selection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#backward-elimination-approach-for-feature-selection">Backward elimination approach for feature selection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#forward-selection-approach-for-feature-selection">Forward selection approach for feature selection</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="auto_examples/index.html">General examples</a><ul>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="references">
+<h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<table class="docutils footnote" frame="void" id="id7" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>T Naghibi, S Hoffmann and B Pfister, “A semidefinite programming based search strategy for feature selection with mutual information measure”, IEEE Transactions on Pattern Analysis and Machine Intelligence, 37(8), pp. 1529–1541, 2015. [<a class="reference external" href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.739.8516&amp;rep=rep1&amp;type=pdf">Pre-print</a>]</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id8" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[2]</a></td><td>M Goemans and D Williamson, “Improved approximation algorithms for maximum cut and satisfiability problems using semidefinite programming”, J. ACM, 42(6), pp. 1115–1145, 1995 [<a class="reference external" href="http://www-math.mit.edu/~goemans/PAPERS/maxcut-jacm.pdf">Pre-print</a>]</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id10" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id4">[3]</a></td><td>H Yang and J Moody, “Data Visualization and Feature Selection: New Algorithms for Nongaussian Data”, NIPS 1999. [<a class="reference external" href="https://papers.nips.cc/paper/1779-data-visualization-and-feature-selection-new-algorithms-for-nongaussian-data.pdf">Pre-print</a>]</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id12" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id5">[4]</a></td><td>M Bennasar, Y Hicks, abd R Setchi, “Feature selection using Joint Mutual Information Maximisation”, Expert Systems with Applications, 42(22), pp. 8520–8532, 2015 [<a class="reference external" href="https://core.ac.uk/download/pdf/82448198.pdf">pre-print</a>]</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id14" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id6">[5]</a></td><td>H Peng, F Long, and C Ding, “Feature selection based on mutual information criteria of max-dependency, max-relevance, and min-redundancy”, IEEE Transactions on Pattern Analysis and Machine Intelligence, 27(8), pp. 1226–1238, 2005. [<a class="reference external" href="http://ranger.uta.edu/~chqding/papers/mRMR_PAMI.pdf">Pre-print</a>]</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id16" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id3">[6]</a></td><td>Colin: Conic-form Linear Optimizer (<a class="reference external" href="www.colinopt.org">www.colinopt.org</a>).</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
+<li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
+<li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
+</ul>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="install.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, KuoLing Huang
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

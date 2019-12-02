@@ -1,0 +1,1116 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>API &mdash; MICO 0.1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/gallery.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="General examples" href="auto_examples/index.html" />
+    <link rel="prev" title="Installation" href="install.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> MICO
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#conic-optimization-approach-for-feature-selection">Conic optimization approach for feature selection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#backward-elimination-approach-for-feature-selection">Backward elimination approach for feature selection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#forward-selection-approach-for-feature-selection">Forward selection approach for feature selection</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="auto_examples/index.html">General examples</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">MICO</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>API</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/api.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="api">
+<h1>API<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h1>
+<p>This is the full API documentation of the <strong>MICO</strong>.</p>
+<div class="section" id="conic-optimization-approach-for-feature-selection">
+<span id="id1"></span><h2>Conic optimization approach for feature selection<a class="headerlink" href="#conic-optimization-approach-for-feature-selection" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="mico.MutualInformationConicOptimization">
+<em class="property">class </em><code class="descclassname">mico.</code><code class="descname">MutualInformationConicOptimization</code><span class="sig-paren">(</span><em>method='JMI'</em>, <em>k=5</em>, <em>n_features='auto'</em>, <em>categorical=True</em>, <em>n_jobs=0</em>, <em>verbose=0</em>, <em>scale_data=True</em>, <em>num_bins=0</em>, <em>random_state=0</em>, <em>max_roundings=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mico/mico.html#MutualInformationConicOptimization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mico.MutualInformationConicOptimization" title="Permalink to this definition">¶</a></dt>
+<dd><p>Conic optimization approach for feature selection.</p>
+<p>This class implements a conic optimization based feature selection method with mutual information (MI) measure <a class="reference internal" href="#rc0ede6ed6b81-1" id="id2">[Rc0ede6ed6b81-1]</a>. This idea is to formulate the selection problem as a pure-binary quadratic optimization problem, which can be heuristically solved by an efficient randomization algorithm via semidefinite programming <a class="reference internal" href="#rc0ede6ed6b81-2" id="id3">[Rc0ede6ed6b81-2]</a>. Optimization software <strong>Colin</strong> <a class="reference internal" href="#rc0ede6ed6b81-6" id="id4">[Rc0ede6ed6b81-6]</a> is used for solving the underlying conic optimization problems.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>method</strong> <span class="classifier-delimiter">:</span> <span class="classifier">string, optional (default=’JMI’)</span></dt>
+<dd><p class="first">A string that specifies the mutual information measure. Possible options are:</p>
+<ul class="last simple">
+<li><strong>JMI</strong> : Joint Mutual Information <a class="reference internal" href="#rc0ede6ed6b81-3" id="id5">[Rc0ede6ed6b81-3]</a></li>
+<li><strong>JMIM</strong> : Joint Mutual Information Maximisation <a class="reference internal" href="#rc0ede6ed6b81-4" id="id6">[Rc0ede6ed6b81-4]</a></li>
+<li><strong>MRMR</strong> : Max-Relevance Min-Redundancy <a class="reference internal" href="#rc0ede6ed6b81-5" id="id7">[Rc0ede6ed6b81-5]</a></li>
+</ul>
+</dd>
+<dt><strong>k</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int, optional (default=5)</span></dt>
+<dd><p class="first last">An integer to specify number of samples for the kernel density estimation using KNN. A small integer between
+3 and 10 is recommended. Note that this parameter is applicable only if <cite>num_bins</cite> is set to 0.</p>
+</dd>
+<dt><strong>n_features</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int or string, optional (default=’auto’)</span></dt>
+<dd><p class="first last">A positive integer number that specifies the number of features to be selected.
+If ‘auto’ is used, then this number will be determined automatically.</p>
+</dd>
+<dt><strong>categorical</strong> <span class="classifier-delimiter">:</span> <span class="classifier">boolean, optional (default=True)</span></dt>
+<dd><p class="first last">If <cite>categorical</cite> is <cite>True</cite>, then the dependent variable is assumed to be a categorical class label. Otherwise, the dependent variable is assumed to be a continuous variable.</p>
+</dd>
+<dt><strong>n_jobs</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int, optional (default=1)</span></dt>
+<dd><p class="first last">The number of threads allowed for the computations. If <cite>n_jobs</cite> <span class="math notranslate nohighlight">\(&lt;= 0\)</span>, then it will be determined internally.</p>
+</dd>
+<dt><strong>verbose</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int, optional (default=0)</span></dt>
+<dd><p class="first">An integer number to specify the verbosity level. Available options are:</p>
+<ul class="last simple">
+<li>0: Disable output.</li>
+<li>1: Display summary results.</li>
+<li>2: Displays all results.</li>
+</ul>
+</dd>
+<dt><strong>scale_data</strong> <span class="classifier-delimiter">:</span> <span class="classifier">boolean, optional (default=True)</span></dt>
+<dd><p class="first last">An boolean flag that specifies if the input data input shall be scaled first.</p>
+</dd>
+<dt><strong>num_bins</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int, optional (default=0)</span></dt>
+<dd><p class="first last">An integer number to specify the number of bins allowed for data binning (bucketing). If <span class="math notranslate nohighlight">\(0\)</span>, then data binning will be disabled, and KNN will be used for kernal density estimation.</p>
+</dd>
+<dt><strong>random_state</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int, optional (default=0)</span></dt>
+<dd><p class="first last">An integer number that specifies the random seed number.</p>
+</dd>
+<dt><strong>max_roundings</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int, optional (default=0)</span></dt>
+<dd><p class="first last">An positive integer to specify the number of iterations allowed for the rounding solution process in <a class="reference internal" href="#rc0ede6ed6b81-2" id="id8">[Rc0ede6ed6b81-2]</a>. If <cite>max_roundings</cite> is 0, then this number will be determined internally.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<table class="docutils citation" frame="void" id="rc0ede6ed6b81-1" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[Rc0ede6ed6b81-1]</a></td><td>T Naghibi, S Hoffmann and B Pfister, “A semidefinite programming based search strategy for feature selection with mutual information measure”, IEEE Transactions on Pattern Analysis and Machine Intelligence, 37(8), pp. 1529–1541, 2015. [<a class="reference external" href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.739.8516&amp;rep=rep1&amp;type=pdf">Pre-print</a>]</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="rc0ede6ed6b81-2" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[Rc0ede6ed6b81-2]</td><td><em>(<a class="fn-backref" href="#id3">1</a>, <a class="fn-backref" href="#id8">2</a>)</em> M Goemans and D Williamson, “Improved approximation algorithms for maximum cut and satisfiability problems using semidefinite programming”, J. ACM, 42(6), pp. 1115–1145, 1995 [<a class="reference external" href="http://www-math.mit.edu/~goemans/PAPERS/maxcut-jacm.pdf">Pre-print</a>]</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="rc0ede6ed6b81-3" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id5">[Rc0ede6ed6b81-3]</a></td><td>H Yang and J Moody, “Data Visualization and Feature Selection: New Algorithms for Nongaussian Data”, NIPS 1999. [<a class="reference external" href="https://papers.nips.cc/paper/1779-data-visualization-and-feature-selection-new-algorithms-for-nongaussian-data.pdf">Pre-print</a>]</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="rc0ede6ed6b81-4" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id6">[Rc0ede6ed6b81-4]</a></td><td>M Bennasar, Y Hicks, abd R Setchi, “Feature selection using Joint Mutual Information Maximisation”, Expert Systems with Applications, 42(22), pp. 8520–8532, 2015 [<a class="reference external" href="https://core.ac.uk/download/pdf/82448198.pdf">pre-print</a>]</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="rc0ede6ed6b81-5" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id7">[Rc0ede6ed6b81-5]</a></td><td>H Peng, F Long, and C Ding, “Feature selection based on mutual information criteria of max-dependency, max-relevance, and min-redundancy”, IEEE Transactions on Pattern Analysis and Machine Intelligence, 27(8), pp. 1226–1238, 2005. [<a class="reference external" href="http://ranger.uta.edu/~chqding/papers/mRMR_PAMI.pdf">Pre-print</a>]</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="rc0ede6ed6b81-6" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id4">[Rc0ede6ed6b81-6]</a></td><td>Colin: Conic-form Linear Optimizer (<a class="reference external" href="www.colinopt.org">www.colinopt.org</a>).</td></tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<p>This implementation follows the scikit-learn API convention:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">fit(X,</span> <span class="pre">y)</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">transform(X)</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">fit_transform(X,</span> <span class="pre">y)</span></code></li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Attributes:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>n_features_</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">The number of selected features.</p>
+</dd>
+<dt><strong>feature_importances_</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array of shape n_features</span></dt>
+<dd><p class="first last">The feature importance scores of the selected features.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="mico.MutualInformationConicOptimization.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><em>self</em>, <em>X</em>, <em>y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mico/mico.html#MutualInformationConicOptimization.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mico.MutualInformationConicOptimization.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fits the feature selection with conic optimization approach.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>X</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, n_features]</span></dt>
+<dd><p class="first last">The training input samples.</p>
+</dd>
+<dt><strong>y</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples]</span></dt>
+<dd><p class="first last">The target values.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mico.MutualInformationConicOptimization.fit_transform">
+<code class="descname">fit_transform</code><span class="sig-paren">(</span><em>self</em>, <em>X</em>, <em>y=None</em>, <em>**fit_params</em><span class="sig-paren">)</span><a class="headerlink" href="#mico.MutualInformationConicOptimization.fit_transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit to data, then transform it.</p>
+<p>Fits transformer to X and y with optional parameters fit_params
+and returns a transformed version of X.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>X</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array of shape [n_samples, n_features]</span></dt>
+<dd><p class="first last">Training set.</p>
+</dd>
+<dt><strong>y</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array of shape [n_samples]</span></dt>
+<dd><p class="first last">Target values.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>X_new</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array of shape [n_samples, n_features_new]</span></dt>
+<dd><p class="first last">Transformed array.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mico.MutualInformationConicOptimization.get_params">
+<code class="descname">get_params</code><span class="sig-paren">(</span><em>self</em>, <em>deep=True</em><span class="sig-paren">)</span><a class="headerlink" href="#mico.MutualInformationConicOptimization.get_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get parameters for this estimator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>deep</strong> <span class="classifier-delimiter">:</span> <span class="classifier">boolean, optional</span></dt>
+<dd><p class="first last">If True, will return the parameters for this estimator and
+contained subobjects that are estimators.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>params</strong> <span class="classifier-delimiter">:</span> <span class="classifier">mapping of string to any</span></dt>
+<dd><p class="first last">Parameter names mapped to their values.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mico.MutualInformationConicOptimization.get_support">
+<code class="descname">get_support</code><span class="sig-paren">(</span><em>self</em>, <em>indices=False</em><span class="sig-paren">)</span><a class="headerlink" href="#mico.MutualInformationConicOptimization.get_support" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a mask, or integer index, of the features selected</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>indices</strong> <span class="classifier-delimiter">:</span> <span class="classifier">boolean (default False)</span></dt>
+<dd><p class="first last">If True, the return value will be an array of integers, rather
+than a boolean mask.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>support</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array</span></dt>
+<dd><p class="first last">An index that selects the retained features from a feature vector.
+If <cite>indices</cite> is False, this is a boolean array of shape
+[# input features], in which an element is True iff its
+corresponding feature is selected for retention. If <cite>indices</cite> is
+True, this is an integer array of shape [# output features] whose
+values are indices into the input feature vector.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mico.MutualInformationConicOptimization.inverse_transform">
+<code class="descname">inverse_transform</code><span class="sig-paren">(</span><em>self</em>, <em>X</em><span class="sig-paren">)</span><a class="headerlink" href="#mico.MutualInformationConicOptimization.inverse_transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reverse the transformation operation</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>X</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array of shape [n_samples, n_selected_features]</span></dt>
+<dd><p class="first last">The input samples.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>X_r</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array of shape [n_samples, n_original_features]</span></dt>
+<dd><p class="first last"><cite>X</cite> with columns of zeros inserted where features would have
+been removed by <cite>transform</cite>.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mico.MutualInformationConicOptimization.set_params">
+<code class="descname">set_params</code><span class="sig-paren">(</span><em>self</em>, <em>**params</em><span class="sig-paren">)</span><a class="headerlink" href="#mico.MutualInformationConicOptimization.set_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the parameters of this estimator.</p>
+<p>The method works on simple estimators as well as on nested objects
+(such as pipelines). The latter have parameters of the form
+<code class="docutils literal notranslate"><span class="pre">&lt;component&gt;__&lt;parameter&gt;</span></code> so that it’s possible to update each
+component of a nested object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt>self</dt>
+<dd></dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mico.MutualInformationConicOptimization.transform">
+<code class="descname">transform</code><span class="sig-paren">(</span><em>self</em>, <em>X</em><span class="sig-paren">)</span><a class="headerlink" href="#mico.MutualInformationConicOptimization.transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reduce X to the selected features.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>X</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array of shape [n_samples, n_features]</span></dt>
+<dd><p class="first last">The input samples.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>X_r</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array of shape [n_samples, n_selected_features]</span></dt>
+<dd><p class="first last">The input samples with only the selected features.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="backward-elimination-approach-for-feature-selection">
+<span id="id19"></span><h2>Backward elimination approach for feature selection<a class="headerlink" href="#backward-elimination-approach-for-feature-selection" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="mico.MutualInformationBackwardElimination">
+<em class="property">class </em><code class="descclassname">mico.</code><code class="descname">MutualInformationBackwardElimination</code><span class="sig-paren">(</span><em>method='JMI'</em>, <em>k=5</em>, <em>n_features='auto'</em>, <em>categorical=True</em>, <em>n_jobs=0</em>, <em>verbose=0</em>, <em>scale_data=True</em>, <em>num_bins=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mico/mico.html#MutualInformationBackwardElimination"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mico.MutualInformationBackwardElimination" title="Permalink to this definition">¶</a></dt>
+<dd><p>Backward elimination approach for feature selection.</p>
+<p>This class implements a backward selection approach for feature selection with mutual information (MI) measure.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>method</strong> <span class="classifier-delimiter">:</span> <span class="classifier">string, optional (default=’JMI’)</span></dt>
+<dd><p class="first">A string that specifies the mutual information measure. Possible options are:</p>
+<ul class="last simple">
+<li><strong>JMI</strong> : Joint Mutual Information <a class="reference internal" href="#rd197fa8a83af-1" id="id20">[Rd197fa8a83af-1]</a></li>
+<li><strong>JMIM</strong> : Joint Mutual Information Maximisation <a class="reference internal" href="#rd197fa8a83af-2" id="id21">[Rd197fa8a83af-2]</a></li>
+<li><strong>MRMR</strong> : Max-Relevance Min-Redundancy <a class="reference internal" href="#rd197fa8a83af-3" id="id22">[Rd197fa8a83af-3]</a></li>
+</ul>
+</dd>
+<dt><strong>k</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int, optional (default=5)</span></dt>
+<dd><p class="first last">An integer to specify number of samples for the kernel density estimation using KNN. A small integer between 3 and 10 is recommended. Note that this parameter is applicable only if <cite>num_bins</cite> is set to 0.</p>
+</dd>
+<dt><strong>n_features</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int or string, optional (default=’auto’)</span></dt>
+<dd><p class="first last">A positive integer number that specifies the number of features to be selected.
+If ‘auto’ is used, then this number will be determined automatically.</p>
+</dd>
+<dt><strong>categorical</strong> <span class="classifier-delimiter">:</span> <span class="classifier">boolean, optional (default=True)</span></dt>
+<dd><p class="first last">If <cite>categorical</cite> is <cite>True</cite>, then the dependent variable is assumed to be a categorical class label. Otherwise, the dependent variable is assumed to be a continuous variable.</p>
+</dd>
+<dt><strong>n_jobs</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int, optional (default=1)</span></dt>
+<dd><p class="first last">The number of threads allowed for the computations. If <cite>n_jobs</cite> <span class="math notranslate nohighlight">\(&lt;= 0\)</span>, then it will be determined internally.</p>
+</dd>
+<dt><strong>verbose</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int, optional (default=0)</span></dt>
+<dd><p class="first">An integer number to specify the verbosity level. Available options are:</p>
+<ul class="last simple">
+<li>0: Disable output.</li>
+<li>1: Display summary results.</li>
+<li>2: Displays all results.</li>
+</ul>
+</dd>
+<dt><strong>scale_data</strong> <span class="classifier-delimiter">:</span> <span class="classifier">boolean, optional (default=True)</span></dt>
+<dd><p class="first last">An boolean flag that specifies if the input data input shall be scaled first.</p>
+</dd>
+<dt><strong>num_bins</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int, optional (default=0)</span></dt>
+<dd><p class="first last">An integer number to specify the number of bins allowed for data binning (bucketing). If <span class="math notranslate nohighlight">\(0\)</span>, then data binning will be disabled, and KNN will be used for kernal density estimation.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<table class="docutils citation" frame="void" id="rd197fa8a83af-1" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id20">[Rd197fa8a83af-1]</a></td><td>H Yang and J Moody, “Data Visualization and Feature Selection: New Algorithms for Nongaussian Data”, NIPS 1999. [<a class="reference external" href="https://papers.nips.cc/paper/1779-data-visualization-and-feature-selection-new-algorithms-for-nongaussian-data.pdf">Pre-print</a>]</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="rd197fa8a83af-2" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id21">[Rd197fa8a83af-2]</a></td><td>M Bennasar, Y Hicks, abd R Setchi, “Feature selection using Joint Mutual Information Maximisation”, Expert Systems with Applications, 42(22), pp. 8520–8532, 2015 [<a class="reference external" href="https://core.ac.uk/download/pdf/82448198.pdf">pre-print</a>]</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="rd197fa8a83af-3" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id22">[Rd197fa8a83af-3]</a></td><td>H Peng, F Long, and C Ding, “Feature selection based on mutual information criteria of max-dependency, max-relevance, and min-redundancy”, IEEE Transactions on Pattern Analysis and Machine Intelligence, 27(8), pp. 1226–1238, 2005. [<a class="reference external" href="http://ranger.uta.edu/~chqding/papers/mRMR_PAMI.pdf">Pre-print</a>]</td></tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<p>This implementation follows the scikit-learn API convention:</p>
+<blockquote>
+<div><ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">fit(X,</span> <span class="pre">y)</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">transform(X)</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">fit_transform(X,</span> <span class="pre">y)</span></code></li>
+</ul>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Attributes:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>n_features_</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">The number of selected features.</p>
+</dd>
+<dt><strong>feature_importances_</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array of shape n_features</span></dt>
+<dd><p class="first last">The feature importance scores of the selected features.</p>
+</dd>
+<dt><strong>ranking_</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array of shape n_features</span></dt>
+<dd><p class="first last">The feature ranking of the selected features, with the first being the first feature selected with largest marginal MI with y, followed by
+the others with decreasing MI.</p>
+</dd>
+<dt><strong>mi_</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array of shape n_features</span></dt>
+<dd><p class="first last">The MI measure of the selected features. Usually this a monotone decreasing array of numbers converging to 0. One can use this to estimate the
+number of features to select. In fact this is what n_features=’auto’ tries to do heuristically.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="mico.MutualInformationBackwardElimination.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><em>self</em>, <em>X</em>, <em>y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mico/mico.html#MutualInformationBackwardElimination.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mico.MutualInformationBackwardElimination.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fits the MI_FS feature selection with the chosen MI_FS method.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>X</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, n_features]</span></dt>
+<dd><p class="first last">The training input samples.</p>
+</dd>
+<dt><strong>y</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples]</span></dt>
+<dd><p class="first last">The target values.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mico.MutualInformationBackwardElimination.fit_transform">
+<code class="descname">fit_transform</code><span class="sig-paren">(</span><em>self</em>, <em>X</em>, <em>y=None</em>, <em>**fit_params</em><span class="sig-paren">)</span><a class="headerlink" href="#mico.MutualInformationBackwardElimination.fit_transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit to data, then transform it.</p>
+<p>Fits transformer to X and y with optional parameters fit_params
+and returns a transformed version of X.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>X</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array of shape [n_samples, n_features]</span></dt>
+<dd><p class="first last">Training set.</p>
+</dd>
+<dt><strong>y</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array of shape [n_samples]</span></dt>
+<dd><p class="first last">Target values.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>X_new</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array of shape [n_samples, n_features_new]</span></dt>
+<dd><p class="first last">Transformed array.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mico.MutualInformationBackwardElimination.get_params">
+<code class="descname">get_params</code><span class="sig-paren">(</span><em>self</em>, <em>deep=True</em><span class="sig-paren">)</span><a class="headerlink" href="#mico.MutualInformationBackwardElimination.get_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get parameters for this estimator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>deep</strong> <span class="classifier-delimiter">:</span> <span class="classifier">boolean, optional</span></dt>
+<dd><p class="first last">If True, will return the parameters for this estimator and
+contained subobjects that are estimators.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>params</strong> <span class="classifier-delimiter">:</span> <span class="classifier">mapping of string to any</span></dt>
+<dd><p class="first last">Parameter names mapped to their values.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mico.MutualInformationBackwardElimination.get_support">
+<code class="descname">get_support</code><span class="sig-paren">(</span><em>self</em>, <em>indices=False</em><span class="sig-paren">)</span><a class="headerlink" href="#mico.MutualInformationBackwardElimination.get_support" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a mask, or integer index, of the features selected</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>indices</strong> <span class="classifier-delimiter">:</span> <span class="classifier">boolean (default False)</span></dt>
+<dd><p class="first last">If True, the return value will be an array of integers, rather
+than a boolean mask.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>support</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array</span></dt>
+<dd><p class="first last">An index that selects the retained features from a feature vector.
+If <cite>indices</cite> is False, this is a boolean array of shape
+[# input features], in which an element is True iff its
+corresponding feature is selected for retention. If <cite>indices</cite> is
+True, this is an integer array of shape [# output features] whose
+values are indices into the input feature vector.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mico.MutualInformationBackwardElimination.inverse_transform">
+<code class="descname">inverse_transform</code><span class="sig-paren">(</span><em>self</em>, <em>X</em><span class="sig-paren">)</span><a class="headerlink" href="#mico.MutualInformationBackwardElimination.inverse_transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reverse the transformation operation</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>X</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array of shape [n_samples, n_selected_features]</span></dt>
+<dd><p class="first last">The input samples.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>X_r</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array of shape [n_samples, n_original_features]</span></dt>
+<dd><p class="first last"><cite>X</cite> with columns of zeros inserted where features would have
+been removed by <cite>transform</cite>.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mico.MutualInformationBackwardElimination.set_params">
+<code class="descname">set_params</code><span class="sig-paren">(</span><em>self</em>, <em>**params</em><span class="sig-paren">)</span><a class="headerlink" href="#mico.MutualInformationBackwardElimination.set_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the parameters of this estimator.</p>
+<p>The method works on simple estimators as well as on nested objects
+(such as pipelines). The latter have parameters of the form
+<code class="docutils literal notranslate"><span class="pre">&lt;component&gt;__&lt;parameter&gt;</span></code> so that it’s possible to update each
+component of a nested object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt>self</dt>
+<dd></dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mico.MutualInformationBackwardElimination.transform">
+<code class="descname">transform</code><span class="sig-paren">(</span><em>self</em>, <em>X</em><span class="sig-paren">)</span><a class="headerlink" href="#mico.MutualInformationBackwardElimination.transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reduce X to the selected features.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>X</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array of shape [n_samples, n_features]</span></dt>
+<dd><p class="first last">The input samples.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>X_r</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array of shape [n_samples, n_selected_features]</span></dt>
+<dd><p class="first last">The input samples with only the selected features.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="forward-selection-approach-for-feature-selection">
+<span id="id29"></span><h2>Forward selection approach for feature selection<a class="headerlink" href="#forward-selection-approach-for-feature-selection" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="mico.MutualInformationForwardSelection">
+<em class="property">class </em><code class="descclassname">mico.</code><code class="descname">MutualInformationForwardSelection</code><span class="sig-paren">(</span><em>method='JMI'</em>, <em>k=5</em>, <em>n_features='auto'</em>, <em>categorical=True</em>, <em>n_jobs=0</em>, <em>verbose=0</em>, <em>scale_data=True</em>, <em>num_bins=0</em>, <em>early_stop_steps=10</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mico/mico.html#MutualInformationForwardSelection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mico.MutualInformationForwardSelection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward selection approach for feature selection.</p>
+<p>This class implements a forward selection approach for feature selection with mutual information (MI) measure.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>method</strong> <span class="classifier-delimiter">:</span> <span class="classifier">string, optional (default=’JMI’)</span></dt>
+<dd><p class="first">A string that specifies the mutual information measure. Possible options are:</p>
+<ul class="last simple">
+<li><strong>JMI</strong> : Joint Mutual Information <a class="reference internal" href="#rd68def899164-1" id="id30">[Rd68def899164-1]</a></li>
+<li><strong>JMIM</strong> : Joint Mutual Information Maximisation <a class="reference internal" href="#rd68def899164-2" id="id31">[Rd68def899164-2]</a></li>
+<li><strong>MRMR</strong> : Max-Relevance Min-Redundancy <a class="reference internal" href="#rd68def899164-3" id="id32">[Rd68def899164-3]</a></li>
+</ul>
+</dd>
+<dt><strong>k</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int, optional (default=5)</span></dt>
+<dd><p class="first last">An integer to specify number of samples for the kernel density estimation using KNN. A small integer between 3 and 10 is recommended. Note that this parameter is applicable only if <cite>num_bins</cite> is set to 0.</p>
+</dd>
+<dt><strong>n_features</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int or string, optional (default=’auto’)</span></dt>
+<dd><p class="first last">A positive integer number that specifies the number of features to be selected.
+If ‘auto’ is used, then this number will be determined automatically.</p>
+</dd>
+<dt><strong>categorical</strong> <span class="classifier-delimiter">:</span> <span class="classifier">boolean, optional (default=True)</span></dt>
+<dd><p class="first last">If <cite>categorical</cite> is <cite>True</cite>, then the dependent variable is assumed to be a categorical class label. Otherwise, the dependent variable is assumed to be a continuous variable.</p>
+</dd>
+<dt><strong>n_jobs</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int, optional (default=1)</span></dt>
+<dd><p class="first last">The number of threads allowed for the computations. If <cite>n_jobs</cite> <span class="math notranslate nohighlight">\(&lt;= 0\)</span>, then it will be determined internally.</p>
+</dd>
+<dt><strong>verbose</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int, optional (default=0)</span></dt>
+<dd><p class="first">An integer number to specify the verbosity level. Available options are:</p>
+<ul class="last simple">
+<li>0: Disable output.</li>
+<li>1: Display summary results.</li>
+<li>2: Displays all results.</li>
+</ul>
+</dd>
+<dt><strong>scale_data</strong> <span class="classifier-delimiter">:</span> <span class="classifier">boolean, optional (default=True)</span></dt>
+<dd><p class="first last">An boolean flag that specifies if the input data input shall be scaled first.</p>
+</dd>
+<dt><strong>num_bins</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int, optional (default=0)</span></dt>
+<dd><p class="first last">An integer number to specify the number of bins allowed for data binning (bucketing). If <span class="math notranslate nohighlight">\(0\)</span>, then data binning will be disabled, and KNN will be used for kernal density estimation.</p>
+</dd>
+<dt><strong>early_stop_steps</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int, optional (default=10)</span></dt>
+<dd><p class="first last">An positive integer to specify the iteration limit allowed without improvement on the MI measure.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">References</p>
+<table class="docutils citation" frame="void" id="rd68def899164-1" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id30">[Rd68def899164-1]</a></td><td>H Yang and J Moody, “Data Visualization and Feature Selection: New Algorithms for Nongaussian Data”, NIPS 1999. [<a class="reference external" href="https://papers.nips.cc/paper/1779-data-visualization-and-feature-selection-new-algorithms-for-nongaussian-data.pdf">Pre-print</a>]</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="rd68def899164-2" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id31">[Rd68def899164-2]</a></td><td>M Bennasar, Y Hicks, abd R Setchi, “Feature selection using Joint Mutual Information Maximisation”, Expert Systems with Applications, 42(22), pp. 8520–8532, 2015 [<a class="reference external" href="https://core.ac.uk/download/pdf/82448198.pdf">pre-print</a>]</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="rd68def899164-3" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id32">[Rd68def899164-3]</a></td><td>H Peng, F Long, and C Ding, “Feature selection based on mutual information criteria of max-dependency, max-relevance, and min-redundancy”, IEEE Transactions on Pattern Analysis and Machine Intelligence, 27(8), pp. 1226–1238, 2005. [<a class="reference external" href="http://ranger.uta.edu/~chqding/papers/mRMR_PAMI.pdf">Pre-print</a>]</td></tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<p>This implementation follows the scikit-learn API convention:</p>
+<blockquote>
+<div><ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">fit(X,</span> <span class="pre">y)</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">transform(X)</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">fit_transform(X,</span> <span class="pre">y)</span></code></li>
+</ul>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Attributes:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>n_features_</strong> <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd><p class="first last">The number of selected features.</p>
+</dd>
+<dt><strong>feature_importances_</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array of shape n_features</span></dt>
+<dd><p class="first last">The feature importance scores of the selected features.</p>
+</dd>
+<dt><strong>ranking_</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array of shape n_features</span></dt>
+<dd><p class="first last">The feature ranking of the selected features, with the first being the first feature selected with largest marginal MI with y, followed by
+the others with decreasing MI.</p>
+</dd>
+<dt><strong>mi_</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array of shape n_features</span></dt>
+<dd><p class="first last">The MI measure of the selected features. Usually this a monotone decreasing array of numbers converging to 0. One can use this to estimate the
+number of features to select. In fact this is what n_features=’auto’ tries to do heuristically.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="mico.MutualInformationForwardSelection.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><em>self</em>, <em>X</em>, <em>y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/mico/mico.html#MutualInformationForwardSelection.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mico.MutualInformationForwardSelection.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fits the MI_FS feature selection with the chosen MI_FS method.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>X</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, n_features]</span></dt>
+<dd><p class="first last">The training input samples.</p>
+</dd>
+<dt><strong>y</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples]</span></dt>
+<dd><p class="first last">The target values.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mico.MutualInformationForwardSelection.fit_transform">
+<code class="descname">fit_transform</code><span class="sig-paren">(</span><em>self</em>, <em>X</em>, <em>y=None</em>, <em>**fit_params</em><span class="sig-paren">)</span><a class="headerlink" href="#mico.MutualInformationForwardSelection.fit_transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit to data, then transform it.</p>
+<p>Fits transformer to X and y with optional parameters fit_params
+and returns a transformed version of X.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>X</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array of shape [n_samples, n_features]</span></dt>
+<dd><p class="first last">Training set.</p>
+</dd>
+<dt><strong>y</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array of shape [n_samples]</span></dt>
+<dd><p class="first last">Target values.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>X_new</strong> <span class="classifier-delimiter">:</span> <span class="classifier">numpy array of shape [n_samples, n_features_new]</span></dt>
+<dd><p class="first last">Transformed array.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mico.MutualInformationForwardSelection.get_params">
+<code class="descname">get_params</code><span class="sig-paren">(</span><em>self</em>, <em>deep=True</em><span class="sig-paren">)</span><a class="headerlink" href="#mico.MutualInformationForwardSelection.get_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get parameters for this estimator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>deep</strong> <span class="classifier-delimiter">:</span> <span class="classifier">boolean, optional</span></dt>
+<dd><p class="first last">If True, will return the parameters for this estimator and
+contained subobjects that are estimators.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>params</strong> <span class="classifier-delimiter">:</span> <span class="classifier">mapping of string to any</span></dt>
+<dd><p class="first last">Parameter names mapped to their values.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mico.MutualInformationForwardSelection.get_support">
+<code class="descname">get_support</code><span class="sig-paren">(</span><em>self</em>, <em>indices=False</em><span class="sig-paren">)</span><a class="headerlink" href="#mico.MutualInformationForwardSelection.get_support" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a mask, or integer index, of the features selected</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>indices</strong> <span class="classifier-delimiter">:</span> <span class="classifier">boolean (default False)</span></dt>
+<dd><p class="first last">If True, the return value will be an array of integers, rather
+than a boolean mask.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>support</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array</span></dt>
+<dd><p class="first last">An index that selects the retained features from a feature vector.
+If <cite>indices</cite> is False, this is a boolean array of shape
+[# input features], in which an element is True iff its
+corresponding feature is selected for retention. If <cite>indices</cite> is
+True, this is an integer array of shape [# output features] whose
+values are indices into the input feature vector.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mico.MutualInformationForwardSelection.inverse_transform">
+<code class="descname">inverse_transform</code><span class="sig-paren">(</span><em>self</em>, <em>X</em><span class="sig-paren">)</span><a class="headerlink" href="#mico.MutualInformationForwardSelection.inverse_transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reverse the transformation operation</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>X</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array of shape [n_samples, n_selected_features]</span></dt>
+<dd><p class="first last">The input samples.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>X_r</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array of shape [n_samples, n_original_features]</span></dt>
+<dd><p class="first last"><cite>X</cite> with columns of zeros inserted where features would have
+been removed by <cite>transform</cite>.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mico.MutualInformationForwardSelection.set_params">
+<code class="descname">set_params</code><span class="sig-paren">(</span><em>self</em>, <em>**params</em><span class="sig-paren">)</span><a class="headerlink" href="#mico.MutualInformationForwardSelection.set_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the parameters of this estimator.</p>
+<p>The method works on simple estimators as well as on nested objects
+(such as pipelines). The latter have parameters of the form
+<code class="docutils literal notranslate"><span class="pre">&lt;component&gt;__&lt;parameter&gt;</span></code> so that it’s possible to update each
+component of a nested object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt>self</dt>
+<dd></dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mico.MutualInformationForwardSelection.transform">
+<code class="descname">transform</code><span class="sig-paren">(</span><em>self</em>, <em>X</em><span class="sig-paren">)</span><a class="headerlink" href="#mico.MutualInformationForwardSelection.transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reduce X to the selected features.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><dl class="first docutils">
+<dt><strong>X</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array of shape [n_samples, n_features]</span></dt>
+<dd><p class="first last">The input samples.</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="first last docutils">
+<dt><strong>X_r</strong> <span class="classifier-delimiter">:</span> <span class="classifier">array of shape [n_samples, n_selected_features]</span></dt>
+<dd><p class="first last">The input samples with only the selected features.</p>
+</dd>
+</dl>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="auto_examples/index.html" class="btn btn-neutral float-right" title="General examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="install.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, KuoLing Huang
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

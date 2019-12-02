@@ -1,0 +1,216 @@
+.. note::
+    :class: sphx-glr-download-link-note
+
+    Click :ref:`here <sphx_glr_download_auto_examples_examples_mibe.py>` to download the full example code
+.. rst-class:: sphx-glr-example-title
+
+.. _sphx_glr_auto_examples_examples_mibe.py:
+
+
+Backward elimination approach for feature selection
+===================================================
+
+An introductory example that demonstrates how to perform feature selection using :class:`mico.MutualInformationBackwardElimination`.
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    ================================================================================
+    Start classification example.
+    ================================================================================
+    --------------------------------------------------------------------------------
+    Populate results.
+     - Selected features: 
+    [False False  True  True False False False False False False False False
+     False False False False False False False False  True False  True  True
+      True False False  True False False]
+     - Feature importance scores: 
+    [0.         0.         0.13860476 0.14050078 0.         0.
+     0.         0.         0.         0.         0.         0.
+     0.         0.         0.         0.         0.         0.
+     0.         0.         0.14277782 0.         0.1468793  0.14371891
+     0.1401912  0.         0.         0.14732722 0.         0.        ]
+     - X_transformed: 
+    [[1.228e+02 1.001e+03 2.538e+01 ... 2.019e+03 1.622e-01 2.654e-01]
+     [1.329e+02 1.326e+03 2.499e+01 ... 1.956e+03 1.238e-01 1.860e-01]
+     [1.300e+02 1.203e+03 2.357e+01 ... 1.709e+03 1.444e-01 2.430e-01]
+     ...
+     [1.083e+02 8.581e+02 1.898e+01 ... 1.124e+03 1.139e-01 1.418e-01]
+     [1.401e+02 1.265e+03 2.574e+01 ... 1.821e+03 1.650e-01 2.650e-01]
+     [4.792e+01 1.810e+02 9.456e+00 ... 2.686e+02 8.996e-02 0.000e+00]]
+    ================================================================================
+    Start regression example.
+    ================================================================================
+              age       sex       bmi        bp        s1        s2        s3        s4        s5        s6
+    0    0.038076  0.050680  0.061696  0.021872 -0.044223 -0.034821 -0.043401 -0.002592  0.019908 -0.017646
+    1   -0.001882 -0.044642 -0.051474 -0.026328 -0.008449 -0.019163  0.074412 -0.039493 -0.068330 -0.092204
+    2    0.085299  0.050680  0.044451 -0.005671 -0.045599 -0.034194 -0.032356 -0.002592  0.002864 -0.025930
+    3   -0.089063 -0.044642 -0.011595 -0.036656  0.012191  0.024991 -0.036038  0.034309  0.022692 -0.009362
+    4    0.005383 -0.044642 -0.036385  0.021872  0.003935  0.015596  0.008142 -0.002592 -0.031991 -0.046641
+    ..        ...       ...       ...       ...       ...       ...       ...       ...       ...       ...
+    437  0.041708  0.050680  0.019662  0.059744 -0.005697 -0.002566 -0.028674 -0.002592  0.031193  0.007207
+    438 -0.005515  0.050680 -0.015906 -0.067642  0.049341  0.079165 -0.028674  0.034309 -0.018118  0.044485
+    439  0.041708  0.050680 -0.015906  0.017282 -0.037344 -0.013840 -0.024993 -0.011080 -0.046879  0.015491
+    440 -0.045472 -0.044642  0.039062  0.001215  0.016318  0.015283 -0.028674  0.026560  0.044528 -0.025930
+    441 -0.045472 -0.044642 -0.073030 -0.081414  0.083740  0.027809  0.173816 -0.039493 -0.004220  0.003064
+
+    [442 rows x 10 columns]
+    [151.  75. 141. 206. 135.  97. 138.  63. 110. 310. 101.  69. 179. 185.
+     118. 171. 166. 144.  97. 168.  68.  49.  68. 245. 184. 202. 137.  85.
+     131. 283. 129.  59. 341.  87.  65. 102. 265. 276. 252.  90. 100.  55.
+      61.  92. 259.  53. 190. 142.  75. 142. 155. 225.  59. 104. 182. 128.
+      52.  37. 170. 170.  61. 144.  52. 128.  71. 163. 150.  97. 160. 178.
+      48. 270. 202. 111.  85.  42. 170. 200. 252. 113. 143.  51.  52. 210.
+      65. 141.  55. 134.  42. 111.  98. 164.  48.  96.  90. 162. 150. 279.
+      92.  83. 128. 102. 302. 198.  95.  53. 134. 144. 232.  81. 104.  59.
+     246. 297. 258. 229. 275. 281. 179. 200. 200. 173. 180.  84. 121. 161.
+      99. 109. 115. 268. 274. 158. 107.  83. 103. 272.  85. 280. 336. 281.
+     118. 317. 235.  60. 174. 259. 178. 128.  96. 126. 288.  88. 292.  71.
+     197. 186.  25.  84.  96. 195.  53. 217. 172. 131. 214.  59.  70. 220.
+     268. 152.  47.  74. 295. 101. 151. 127. 237. 225.  81. 151. 107.  64.
+     138. 185. 265. 101. 137. 143. 141.  79. 292. 178.  91. 116.  86. 122.
+      72. 129. 142.  90. 158.  39. 196. 222. 277.  99. 196. 202. 155.  77.
+     191.  70.  73.  49.  65. 263. 248. 296. 214. 185.  78.  93. 252. 150.
+      77. 208.  77. 108. 160.  53. 220. 154. 259.  90. 246. 124.  67.  72.
+     257. 262. 275. 177.  71.  47. 187. 125.  78.  51. 258. 215. 303. 243.
+      91. 150. 310. 153. 346.  63.  89.  50.  39. 103. 308. 116. 145.  74.
+      45. 115. 264.  87. 202. 127. 182. 241.  66.  94. 283.  64. 102. 200.
+     265.  94. 230. 181. 156. 233.  60. 219.  80.  68. 332. 248.  84. 200.
+      55.  85.  89.  31. 129.  83. 275.  65. 198. 236. 253. 124.  44. 172.
+     114. 142. 109. 180. 144. 163. 147.  97. 220. 190. 109. 191. 122. 230.
+     242. 248. 249. 192. 131. 237.  78. 135. 244. 199. 270. 164.  72.  96.
+     306.  91. 214.  95. 216. 263. 178. 113. 200. 139. 139.  88. 148.  88.
+     243.  71.  77. 109. 272.  60.  54. 221.  90. 311. 281. 182. 321.  58.
+     262. 206. 233. 242. 123. 167.  63. 197.  71. 168. 140. 217. 121. 235.
+     245.  40.  52. 104. 132.  88.  69. 219.  72. 201. 110.  51. 277.  63.
+     118.  69. 273. 258.  43. 198. 242. 232. 175.  93. 168. 275. 293. 281.
+      72. 140. 189. 181. 209. 136. 261. 113. 131. 174. 257.  55.  84.  42.
+     146. 212. 233.  91. 111. 152. 120.  67. 310.  94. 183.  66. 173.  72.
+      49.  64.  48. 178. 104. 132. 220.  57.]
+    --------------------------------------------------------------------------------
+    Populate results.
+     - Selected features: 
+    [False False False False False  True  True  True  True  True]
+     - Feature importance scores: 
+    [0.  0.  0.  0.  0.  0.2 0.2 0.2 0.2 0.2]
+     - X_transformed: 
+    [[-0.03482076 -0.04340085 -0.00259226  0.01990842 -0.01764613]
+     [-0.01916334  0.07441156 -0.03949338 -0.06832974 -0.09220405]
+     [-0.03419447 -0.03235593 -0.00259226  0.00286377 -0.02593034]
+     ...
+     [-0.01383982 -0.02499266 -0.01107952 -0.04687948  0.01549073]
+     [ 0.01528299 -0.02867429  0.02655962  0.04452837 -0.02593034]
+     [ 0.02780893  0.17381578 -0.03949338 -0.00421986  0.00306441]]
+
+
+
+
+
+
+|
+
+
+.. code-block:: default
+   :lineno-start: 7
+
+    from mico import MutualInformationBackwardElimination
+    import pandas as pd
+    from sklearn.datasets import load_breast_cancer, load_diabetes
+
+
+    def test_mibe_classification():
+
+        print("=" * 80)
+        print("Start classification example.")
+        print("=" * 80)
+
+        # Prepare data.
+        data = load_breast_cancer()
+        y = data.target
+        X = pd.DataFrame(data.data, columns=data.feature_names)
+
+        # Perform feature selection.
+        mibe = MutualInformationBackwardElimination(verbose=2, categorical=True, n_features=7)
+        mibe.fit(X, y)
+
+        print("-" * 80)
+        print("Populate results.")
+        # Populate selected features.
+        print(" - Selected features: \n{}".format(mibe.get_support()))
+        # Populate feature importance scores.
+        print(" - Feature importance scores: \n{}".format(mibe.feature_importances_))
+        # Call transform() on X.
+        X_transformed = mibe.transform(X)
+        print(" - X_transformed: \n{}".format(X_transformed))
+
+
+    def test_mibe_regression():
+
+        print("=" * 80)
+        print("Start regression example.")
+        print("=" * 80)
+
+        # Prepare data.
+        data = load_diabetes()
+        y = data.target
+        X = pd.DataFrame(data.data, columns=data.feature_names)
+        print(X)
+        print(y)
+
+        # Perform feature selection.
+        mibe = MutualInformationBackwardElimination(verbose=2, num_bins=10, categorical=False, n_features=5)
+        mibe.fit(X, y)
+
+        print("-" * 80)
+        print("Populate results.")
+        # Populate selected features.
+        print(" - Selected features: \n{}".format(mibe.get_support()))
+        # Populate feature importance scores.
+        print(" - Feature importance scores: \n{}".format(mibe.feature_importances_))
+        # Call transform() on X.
+        X_transformed = mibe.transform(X)
+        print(" - X_transformed: \n{}".format(X_transformed))
+
+
+    if __name__ == '__main__':
+        test_mibe_classification()
+        test_mibe_regression()
+
+
+.. rst-class:: sphx-glr-timing
+
+   **Total running time of the script:** ( 0 minutes  13.132 seconds)
+
+
+.. _sphx_glr_download_auto_examples_examples_mibe.py:
+
+
+.. only :: html
+
+ .. container:: sphx-glr-footer
+    :class: sphx-glr-footer-example
+
+
+
+  .. container:: sphx-glr-download
+
+     :download:`Download Python source code: examples_mibe.py <examples_mibe.py>`
+
+
+
+  .. container:: sphx-glr-download
+
+     :download:`Download Jupyter notebook: examples_mibe.ipynb <examples_mibe.ipynb>`
+
+
+.. only:: html
+
+ .. rst-class:: sphx-glr-signature
+
+    `Gallery generated by Sphinx-Gallery <https://sphinx-gallery.github.io>`_
