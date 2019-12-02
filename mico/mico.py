@@ -380,11 +380,7 @@ class MutualInformationBase(BaseEstimator, SelectorMixin, metaclass=ABCMeta):
 
     k : int, optional (default=5)
 
-        An integer to specify number of samples for the kernel density estimation using KNN. A small integer between 3 and 10 is recommended.
-
-        .. Note::
-
-        This parameter is applicable only if `num_bins` is set to 0.
+        An integer to specify number of samples for the kernel density estimation using KNN. A small integer between 3 and 10 is recommended. Note that this parameter is applicable only if `num_bins` is set to 0.
 
     n_features : int or string, optional (default='auto')
 
@@ -644,11 +640,7 @@ class MutualInformationForwardSelection(MutualInformationBase):
 
     k : int, optional (default=5)
 
-        An integer to specify number of samples for the kernel density estimation using KNN. A small integer between 3 and 10 is recommended.
-
-        .. Note::
-
-        This parameter is applicable only if `num_bins` is set to 0.
+        An integer to specify number of samples for the kernel density estimation using KNN. A small integer between 3 and 10 is recommended. Note that this parameter is applicable only if `num_bins` is set to 0.
 
     n_features : int or string, optional (default='auto')
 
@@ -923,11 +915,7 @@ class MutualInformationBackwardElimination(MutualInformationBase):
 
     k : int, optional (default=5)
 
-        An integer to specify number of samples for the kernel density estimation using KNN. A small integer between 3 and 10 is recommended.
-
-        .. Note::
-
-        This parameter is applicable only if `num_bins` is set to 0.
+        An integer to specify number of samples for the kernel density estimation using KNN. A small integer between 3 and 10 is recommended. Note that this parameter is applicable only if `num_bins` is set to 0.
 
     n_features : int or string, optional (default='auto')
 
@@ -1185,11 +1173,7 @@ class MutualInformationConicOptimization(MutualInformationBase):
     k : int, optional (default=5)
 
         An integer to specify number of samples for the kernel density estimation using KNN. A small integer between
-        3 and 10 is recommended.
-
-        .. Note::
-
-        This parameter is applicable only if `num_bins` is set to 0.
+        3 and 10 is recommended. Note that this parameter is applicable only if `num_bins` is set to 0.
 
     n_features : int or string, optional (default='auto')
 

@@ -2,7 +2,7 @@
 Forward selection approach for feature selection
 ================================================
 
-An introductory example that demonstrates how to perform feature selection using :class:`mifs.MutualInformationForwardSelection`.
+An introductory example that demonstrates how to perform feature selection using :class:`mico.MutualInformationForwardSelection`.
 """
 from mico import MutualInformationForwardSelection
 import pandas as pd

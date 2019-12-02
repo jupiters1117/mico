@@ -2,7 +2,7 @@
 Backward elimination approach for feature selection
 ===================================================
 
-An introductory example that demonstrates how to perform feature selection using :class:`mibe.MutualInformationBackwardElimination`.
+An introductory example that demonstrates how to perform feature selection using :class:`mico.MutualInformationBackwardElimination`.
 """
 from mico import MutualInformationBackwardElimination
 import pandas as pd

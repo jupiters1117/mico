@@ -48,21 +48,6 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx_gallery.gen_gallery',
     'sphinx.ext.mathjax'
-
-    #'numpydoc',
-    #'sphinx.ext.autodoc',
-    #'sphinx.ext.doctest',
-    #'sphinx.ext.intersphinx',
-    #'sphinx.ext.todo',
-    #'sphinx.ext.mathjax',
-    #'sphinx.ext.pngmath',
-    #'sphinx.ext.imgmath',
-    #'sphinx.ext.ifconfig',
-    #'sphinx.ext.viewcode',
-    #'sphinx_gallery.gen_gallery',
-    #'sphinx.ext.autosummary'
-
-
 ]
 
 '''
@@ -79,28 +64,35 @@ sphinx_gallery_conf = {
 
 numpydoc_show_class_members = False
 
-sphinx_gallery_conf = {
-    # path to your examples scripts
-    'examples_dirs' : '../examples',
-    # path where to save gallery generated examples
-    'gallery_dirs' : 'auto_examples',
-    'backreferences_dir': os.path.join('generated'),
-}
-
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
+# https://sphinx-gallery.github.io/stable/configuration.html#controlling-what-output-is-captured
+sphinx_gallery_conf = {
+    'line_numbers': 'True',
+    # path to your examples scripts
+    'examples_dirs': '../examples',
+    # path where to save gallery generated examples
+    'gallery_dirs': 'auto_examples',
+    #'backreferences_dir': os.path.join('generated'),
+    # Generate the plots for the gallery
+    'plot_gallery': 'True',
+    'capture_repr': ('_repr_html_', '__repr__', '__str__'),
+    # https://sphinx-gallery.github.io/stable/configuration.html#build-pattern
+    'filename_pattern': '',
+    'ignore_pattern': r'__init__\.py',
+}
+
+
 # generate autosummary even if no references
 autosummary_generate = True
+
 
 # The suffix of source filenames.
 source_suffix = '.rst'
 
 # The encoding of source files.
 #source_encoding = 'utf-8-sig'
-
-# Generate the plots for the gallery
-plot_gallery = True
 
 # The master toctree document.
 master_doc = 'index'
@@ -114,7 +106,9 @@ copyright = u'2019, KuoLing Huang'
 # built documents.
 #
 # The short X.Y version.
-__version__ = '0.1.0.dev0'
+#__version__ = '0.1.0.dev0'
+import mico
+__version__ = mico.__version__
 version = __version__
 # The full version, including alpha/beta/rc tags.
 release = __version__
@@ -191,7 +185,7 @@ html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ['./_build/html/_static']
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
