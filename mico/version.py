@@ -71,10 +71,10 @@ REQUIRED_MODULE_METADATA = (
         'required_at_installation': True,
         'install_info': _MIFS_DATASET_INSTALL_MSG}),
     # DEPRECATED
-    ('colinpy', {
-        'min_version': '0.8.0',
-        'required_at_installation': True,
-        'install_info': _MIFS_DATASET_INSTALL_MSG}),
+    #('colinpy', {
+    #    'min_version': '0.8.0',
+    #    'required_at_installation': True,
+    #    'install_info': _MIFS_DATASET_INSTALL_MSG}),
     ('mindoptpy', {
         'min_version': '0.23.0',
         'required_at_installation': True,
