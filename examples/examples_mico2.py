@@ -6,7 +6,7 @@ An introductory example that demonstrates how to perform feature selection using
 """
 from mico import MutualInformationConicOptimization
 import pandas as pd
-from sklearn.datasets import load_breast_cancer, load_diabetes, make_classification
+from sklearn.datasets import load_breast_cancer, load_diabetes, make_classification, make_regression
 
 
 def test_mico_classification():
@@ -15,15 +15,10 @@ def test_mico_classification():
     print("Start classification example.")
     print("=" * 80)
 
-    # Prepare data.
-    #data = load_breast_cancer()
-    #y = data.target
-    #X = pd.DataFrame(data.data, columns=data.feature_names)
-
-    X, y = make_classification(n_samples=100, n_features=30, n_classes=2)
+    X, y = make_classification(n_samples=75, n_features=30, n_classes=2)
 
     # Perform feature selection.
-    mico = MutualInformationConicOptimization(verbose=2, categorical=True, n_features=7)
+    mico = MutualInformationConicOptimization(verbose=2, categorical=True, n_features=15)
     mico.fit(X, y)
 
     print("-" * 80)
@@ -32,9 +27,9 @@ def test_mico_classification():
     print(" - Selected features: \n{}".format(mico.get_support()))
     # Populate feature importance scores.
     print(" - Feature importance scores: \n{}".format(mico.feature_importances_))
-    # Call transform() on X.
-    X_transformed = mico.transform(X)
-    print(" - X_transformed: \n{}".format(X_transformed))
+    # Call transform() on X to filter it down to selected features.
+    X_filtered = mico.transform(X)
+    print(" - X_filtered: \n{}".format(X_filtered))
 
 
 def test_mico_regression():
@@ -43,15 +38,10 @@ def test_mico_regression():
     print("Start regression example.")
     print("=" * 80)
 
-    # Prepare data.
-    data = load_diabetes()
-    y = data.target
-    X = pd.DataFrame(data.data, columns=data.feature_names)
-    print(X)
-    print(y)
+    X, y = make_regression(n_samples=75, n_features=30, n_targets=1)
 
     # Perform feature selection.
-    mico = MutualInformationConicOptimization(verbose=2, num_bins=0, categorical=False, n_features=5)
+    mico = MutualInformationConicOptimization(verbose=2, num_bins=0, categorical=False, n_features=15)
     mico.fit(X, y)
 
     print("-" * 80)
@@ -60,9 +50,9 @@ def test_mico_regression():
     print(" - Selected features: \n{}".format(mico.get_support()))
     # Populate feature importance scores.
     print(" - Feature importance scores: \n{}".format(mico.feature_importances_))
-    # Call transform() on X.
-    X_transformed = mico.transform(X)
-    print(" - X_transformed: \n{}".format(X_transformed))
+    # Call transform() on X to filter it down to selected features.
+    X_filtered = mico.transform(X)
+    print(" - X_filtered: \n{}".format(X_filtered))
 
 
 if __name__ == '__main__':

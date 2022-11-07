@@ -7,9 +7,10 @@ from sklearn.utils import check_X_y
 from sklearn.preprocessing import StandardScaler
 from psutil import cpu_count
 from sklearn.base import BaseEstimator
-from sklearn.feature_selection.base import SelectorMixin
+from sklearn.feature_selection import SelectorMixin
 import bottleneck as bn
-from . import mico_utils
+from mico import mico_utils
+#import mico_utils # DEV
 #from sklearn.feature_selection import VarianceThreshold
 from scipy import sparse, stats
 from scipy.stats import rankdata
@@ -1281,9 +1282,23 @@ class MutualInformationConicOptimization(MutualInformationBase):
         y : array-like, shape = [n_samples]
             The target values.
         """
+        #return self.fit_colin(X, y)
+        return self.fit_mindopt(X, y)
+
+    def fit_colin(self, X, y):
+        """
+        Fits the feature selection with conic optimization approach using Colin.
+
+        Parameters
+        ----------
+        X : array-like, shape = [n_samples, n_features]
+            The training input samples.
+
+        y : array-like, shape = [n_samples]
+            The target values.
+        """
         # Colin
         import colinpy
-        #from colinpy import *
         from colinpy import ClnModel, ClnError
 
         #-------------------------------------------------------------------#
@@ -1499,6 +1514,335 @@ class MutualInformationConicOptimization(MutualInformationBase):
                 prim_soln = model.get_prim_soln()
 
             model.free_mdl()
+
+        # Create covariance matrix.
+        logging.info("Started generating covariance matrix.")
+        mean_vec = np.zeros(num_features + 1)
+        cov_mat = []
+        for i in range(0, num_features + 1):
+            for j in range(0, num_features + 1):
+                cov_mat.append(prim_soln[map_ij_to_k(i, j, num_features + 1)])
+        #cov_mat = list(map(lambda x : round(x, 4), cov_mat))
+        #print(cov_mat)
+
+        # Perturbation.
+        for k in range(0, (num_features + 1) * (num_features + 1)):
+            i, j = map_k_to_ij(k, num_features + 1)
+            if i == j:
+                # Add eps to diagonal.
+                pass
+                cov_mat[k] += 1.E-4
+
+        cov_mat = np.matrix(cov_mat).reshape((num_features + 1), (num_features + 1))
+        #print("cov_mat", cov_mat)
+
+        # Rounding solution.
+        best_diff = math.inf
+        best_score = -math.inf
+        best_soln = []
+        pdf = stats.multivariate_normal(mean_vec, cov_mat)
+        num_roundings = 0
+
+        if DEBUG:
+            print("Primal soln: {}".format(prim_soln))
+            dbg_opt_val = 0
+            for i in range(0, num_features + 1):
+                for j in range(0, num_features + 1):
+                    dbg_opt_val += prim_soln[i * (num_features + 1) + j] * Qu[i, j]
+            print("Obj: {}", dbg_opt_val)
+            for i in range(0, num_features + 1):
+                print(Qu[i, 0:(num_features + 1)])
+
+        logging.info("Started rounding process.")
+        logging.info(" - Max roundings : {}".format(self.max_roundings))
+        logging.info("{0:>5}{1:>5}{2:15}".format("Iter", "Diff", "      ObjValue"))
+        seed = self.random_state
+        while num_roundings < self.max_roundings:
+            sampled_pt = pdf.rvs(1, random_state=seed)
+            seed += 1
+            ref_pt = sampled_pt[0]
+            if abs(ref_pt) < 0.1:
+                #print("ref_pt", ref_pt)
+                continue
+
+            # Solution rounding.
+            if ref_pt >= 0:
+                curr_soln = [i for i, e in enumerate(sampled_pt[1:len(sampled_pt)]) if e >= 0]
+            else:
+                curr_soln = [i for i, e in enumerate(sampled_pt[1:len(sampled_pt)]) if e <= 0]
+            curr_soln_binary = self._convert_idx_array_to_mask_array(curr_soln, num_features)
+
+            msg = ""
+            if True:
+                # Calculate feature difference.
+                curr_features_sel = np.sum(curr_soln_binary)
+                curr_diff = abs(curr_features_sel - num_features_sel)
+                curr_score = self._calc_xQx(Q, curr_soln_binary)
+                # Update statistics.
+                if curr_diff < best_diff:
+                    best_diff = curr_diff
+                    best_score = curr_score
+                    best_soln = curr_soln
+                    msg += "*"
+                elif curr_diff == best_diff and best_diff == 0:
+                    # Check objective value.
+                    # Update statistics.
+                    if curr_score > best_score:
+                        best_score = curr_score
+                        best_soln = curr_soln
+                        msg += "**"
+
+            else:
+                # Calculate the score.
+                curr_score = self._calc_xQx(Q, curr_soln_binary)
+
+                # Update statistics.
+                if curr_score > best_score or best_score == -math.inf:
+                    best_score = curr_score
+                    best_soln = curr_soln
+                    msg += "*"
+
+            # Populate information.
+            num_roundings += 1
+            logging.info("{0:>5}{1:>5}{2:+14.6E} {3}".format(num_roundings, int(curr_diff), curr_score, msg))
+
+        #-------------------------------------------------------------------#
+        # Generate feature importance scores.                               #
+        #-------------------------------------------------------------------#
+        best_soln, best_score, feature_importances, feature_raking = \
+            self._generate_feature_importances(best_soln, Q, num_features)
+
+        #-------------------------------------------------------------------#
+        # Save results                                                      #
+        #-------------------------------------------------------------------#
+        self.n_features_ = len(best_soln)
+        self.feature_importances_ = feature_importances
+        self._support_mask = np.zeros(num_features, dtype=np.bool)
+        self._support_mask[best_soln] = True
+
+        self._print_end_result(num_features_sel, num_features, best_soln)
+
+        return self
+
+    def fit_mindopt(self, X, y):
+        """
+        Fits the feature selection with conic optimization approach using MindOpt.
+
+        Parameters
+        ----------
+        X : array-like, shape = [n_samples, n_features]
+            The training input samples.
+
+        y : array-like, shape = [n_samples]
+            The target values.
+        """
+        # MindOpt
+        import mindoptpy
+        from mindoptpy import MdoModel, MdoError, MDO_STR_PARAM, MDO_INT_PARAM, MDO_REAL_PARAM, MDO_STR_ATTR, MDO_INT_ATTR, MDO_REAL_ATTR
+
+        #-------------------------------------------------------------------#
+        # Initialize the parameters.                                        #
+        #-------------------------------------------------------------------#
+        self.X, y = self._init_data(X, y)
+        n, num_features = X.shape
+        self.y = y.reshape(n, 1)
+
+        # list of features
+        S = list(range(num_features))
+
+        #-------------------------------------------------------------------#
+        # Create the MI matrix.                                             #
+        #-------------------------------------------------------------------#
+        # Notation:
+        # - N : num_features
+        # - P : num_features_sel
+        Q = np.zeros((num_features, num_features))
+        Q[:] = 0.0
+
+        # Calculate number of the selected features and the parameter.
+        if self.n_features == 'auto':
+            num_features_sel = min(1000, max(1, num_features * 0.2))
+        else:
+            num_features_sel = min(num_features, self.n_features)
+        offdiagonal_param = -0.5 / (num_features_sel - 1)
+
+        # Calculate the number of rounding iterations.
+        if self.max_roundings <= 0:
+            self.max_roundings = num_features_sel
+
+        # Populate info.
+        self._print_init_result(num_features_sel, num_features, offdiagonal_param)
+
+        # Calculate the MI matrix.
+        logging.info("Started calculating full MI matrix.")
+        if self.categorical:
+            Nx = []
+            classes = np.unique(y)
+            sum_y = {}
+            for yi in classes:
+                sum_y[yi] = np.sum(y == yi)
+            for yi in y.flatten():
+                Nx.append(sum_y[yi])
+
+        if True:
+            # Parallelize the outer loop - faster.
+            Qtri = Parallel(n_jobs=self.n_jobs)(delayed(get_mico_vector)(
+                self, self.k, list(range(i, num_features, 1)), s, offdiagonal_param, self._are_data_binned(), Nx if self.categorical else None, 1
+            ) for i, s in enumerate(S))
+
+            for i, s in enumerate(S):
+                Q[s, list(range(i, num_features, 1))] = Qtri[s]
+        else:
+            # Parallelize the outer loop - slower.
+            for i, s in enumerate(S):
+                S2 = list(range(i, num_features, 1))
+                Q[s, S2] = get_mico_vector(self, self.k, S2, s, offdiagonal_param, self._are_data_binned(), Nx if self.categorical else None, self.n_jobs)
+
+        # Ensure the MI matrix is symmetric.
+        for i in range(num_features):
+            for j in range(i + 1, num_features):
+                Q[j, i] = Q[i, j]
+
+        # Calculate Q^T e.
+        QTe = np.zeros(num_features)
+        for s in S:
+            QTe[s] = Q[s, :].sum()
+            assert(QTe[s] == Q[:, s].sum())
+
+        # Create Q^u matrix.
+        # The first row/column is the auxiliary variable.
+        Qu = np.zeros((num_features + 1, num_features + 1))
+        Qu[0, 0] = 0.0
+        Qu[1:(num_features + 1), 1:(num_features + 1)] = Q
+        Qu[0, 1:(num_features + 1)] = QTe
+        Qu[1:(num_features + 1), 0] = QTe
+
+        #-------------------------------------------------------------------#
+        # Input optimization model.                                         #
+        #                                                                   #
+        # See                                                               #
+        #   A Semidefinite Programming Based Search Strategy for Feature    #
+        #   Selection with Mutual Information Measure, Eq (26)              #
+        #-------------------------------------------------------------------#
+        logging.info("Started creating semidefinite optimization model.")
+        def map_ij_to_k(i, j, size):
+            return i * size + j
+
+        def map_k_to_ij(k, size):
+            return int(k/size), int(k%size)
+
+        # Cone information.
+        semidefinite_cone = list(range((num_features + 1) * (num_features + 1)))
+
+        # Objective.
+        row0_idx = []
+        col0_idx = []
+        row0_val = []
+        for i in range(0, num_features + 1):
+            for j in range(i, num_features + 1):
+                row0_idx += [i]
+                col0_idx += [j]
+                row0_val += [Qu[i, j]]
+
+        # Constraint 1.
+        row1_idx = []
+        col1_idx = []
+        row1_val = []
+        for i in range(1, num_features + 1):
+            for j in range(i, num_features + 1):
+                row1_idx += [i]
+                col1_idx += [j]
+                row1_val += [1.0]
+        row1_rhs = (2.0 * num_features_sel - num_features) ** 2
+
+        # Constraint 2.
+        row2_idx = []
+        col2_idx = []
+        row2_val = []
+        for i in range(1, num_features + 1):
+            row2_idx += [0]
+            col2_idx += [i]
+            row2_val += [1.0]
+        row2_rhs = 2.0 * (2.0 * num_features_sel - num_features)
+
+        prim_soln = []
+
+        # Model.
+        MDO_INFINITY = MdoModel.get_infinity()
+
+        # Step 1. Create a model and change the parameters.
+        model = MdoModel()
+        #model.set_int_param("Presolve", 0)
+        if self.verbose == 0:
+            model.set_log_to_console(False)
+
+        try:
+            # Step 2. Input model.
+            # Change to maximization problem.
+            model.set_int_attr(MDO_INT_ATTR.MIN_SENSE, 0)
+
+            # Add matrix variables. 
+            model.add_sym_mats([(num_features + 1)], ["Y"])
+
+            # Input objective coefficients. 
+            model.replace_sym_mat_objs(0, row0_idx, col0_idx, row0_val)
+
+            # Input first constraint. 
+            #   \sum_{i,j}^N Y_{ij} = (2P - N)^2.
+            model.add_cons(row1_rhs, row1_rhs, None, name = "c_Yij")
+            model.replace_sym_mat_elements(0, 0, row1_idx, col1_idx, row1_val)
+
+            # Input second constraint. 
+            #   \sum_{i}^N Y_{i0} + \sum_{i}^N Y_{0i} = 2 * (2P - N).
+            model.add_cons(row2_rhs, row2_rhs, None, name = "c_Yi0")
+            model.replace_sym_mat_elements(1, 0, row2_idx, col2_idx, row2_val)
+
+            # Input rest constraints. 
+            #   diag(Y) = e.
+            for i in range(0, num_features + 1):
+                model.add_cons(1.0, 1.0, None, name = "diag_{0}".format(i))
+                model.replace_sym_mat_elements(i + 2, 0, [i], [i], [1.0])
+       
+            # Step 3. Solve the problem and populate the result.
+            model.solve_prob()
+            model.display_results()
+
+            status_code, status_msg = model.get_status()
+            instance = get_time_stamp()
+            if status_msg == "OPTIMAL" or status_msg == "SUB-OPTIMAL":
+
+                logging.info("Optimizer terminated with {0} status (code {1}).".format(status_msg, status_code))
+                logging.info(" - Primal objective : {:8.6f}".format(model.get_real_attr(MDO_REAL_ATTR.PRIMAL_OBJ_VAL)))
+            
+                prim_soln = model.get_real_attr_sym_mat(MDO_REAL_ATTR.SYM_MAT_PRIMAL_SOLN, 0, 
+                    [i * (num_features + 1) + j for i in range(num_features + 1) for j in range(num_features + 1)], 
+                    [j * (num_features + 1) + i for i in range(num_features + 1) for j in range(num_features + 1)])           
+                if DEBUG:
+                    print("X[0] = ")
+                    for i in range(2):
+                        print(" (", end="") 
+                        for j in range(2):
+                            print(" {0:8.6f}".format(prim_soln[i * 2 + j]), end=""), 
+                        print(" )") 
+            else:
+                print("Optimizer terminated with a(n) {0} status (code {1}).".format(status_msg, status_code))
+
+                msg = "MindOpt failed to solve the problem to optimality. Terminated."
+                logging.error(msg)
+
+        except MdoError as e:
+            print("Received Mindopt exception.")
+            print(" - Code          : {}".format(e.code))
+            print(" - Reason        : {}".format(e.message))
+        except Exception as e:
+            print("Received exception.")
+            print(" - Reason        : {}".format(e))
+        finally:
+            # Step 4. Free the model.
+            model.free_mdl()
+
+        if len(prim_soln) == 0:
+            return
 
         # Create covariance matrix.
         logging.info("Started generating covariance matrix.")
